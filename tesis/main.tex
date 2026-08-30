@@ -1,0 +1,56 @@
+% !TeX program = lualatex
+% !BIB program = biber
+\documentclass[12pt,oneside,openany]{report}
+
+% Configuración central del proyecto
+\input{config/metadata}
+\input{config/paquetes}
+\input{config/apa7}
+
+\begin{document}
+\pagestyle{plain}
+
+% =========================
+% Preliminares
+% =========================
+\pagenumbering{gobble}
+\input{preliminares/portada}
+\clearpage
+\pagenumbering{Roman}
+\input{preliminares/agradecimientos}
+\input{preliminares/resumen}
+\input{preliminares/abstract}
+
+\tableofcontents
+
+% Activar cuando exista al menos una figura o tabla real.
+% \listoffigures
+% \listoftables
+
+% =========================
+% Cuerpo de la tesis
+% =========================
+\input{capitulos/01_introduccion}
+\input{capitulos/02_estado_del_arte}
+\input{capitulos/03_metodologia_requerimientos}
+\input{capitulos/04_arquitectura_diseno}
+\input{capitulos/05_implementacion}
+\input{capitulos/06_validacion_experimental}
+\input{capitulos/07_resultados_discusion}
+\input{capitulos/08_conclusiones}
+
+% =========================
+% Referencias
+% =========================
+\ifbibliographydefined
+  \printbibliography[heading=bibintoc,title={Referencias}]
+\fi
+
+% =========================
+% Anexos
+% =========================
+\appendix
+\input{anexos/anexo_a}
+\input{anexos/anexo_b}
+
+\end{document}
