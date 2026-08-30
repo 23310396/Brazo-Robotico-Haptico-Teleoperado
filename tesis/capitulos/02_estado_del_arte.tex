@@ -1,14 +1,122 @@
 \chapter{Estado del arte}
 \label{chap:estado-arte}
 
-% Estructura académica prevista:
-% 1. Sistemas wearable de teleoperación.
-% 2. Motion mapping humano--robot.
-% 3. Captura del movimiento del operador.
-% 4. Sensado de fuerza.
-% 5. Retroalimentación háptica.
-% 6. Precisión, estabilidad, filtrado y latencia.
-% 7. Evaluación experimental de interfaces de teleoperación.
-% 8. Síntesis del estado del arte.
-%
-% Este será el primer capítulo sustantivo a integrar.
+El desarrollo de una interfaz wearable para teleoperación no depende de un único problema técnico. La calidad del sistema resulta de la interacción entre la captura del movimiento humano, la estrategia de mapeo hacia el manipulador, la estabilidad de las señales, la latencia, el sensado de fuerza, la modalidad de retroalimentación y el método utilizado para evaluar el desempeño. Por ello, la revisión se organiza de forma temática y comparativa, buscando identificar qué soluciones existen, qué compromisos introducen y qué implicaciones tienen para el sistema propuesto.
+
+% PENDIENTE DE TRAZABILIDAD:
+% Incorporar las fuentes adicionales aceptadas de la matriz final de 01 cuando
+% el registro definitivo esté consolidado. El texto visible evita atribuir a
+% una fuente concreta aquello cuyo ID/aceptación todavía no está recuperado.
+
+\section{Sistemas wearable de teleoperación}
+
+% FUENTE: P-SEN-003
+Una línea de trabajo relevante consiste en utilizar sensores portables para capturar directamente el movimiento del operador y convertirlo en comandos para un robot remoto. Este enfoque busca reducir la traducción mental exigida por interfaces convencionales, ya que el operador puede expresar parte de la intención de movimiento mediante su propio cuerpo. Un ejemplo directamente relacionado con esta arquitectura es el controlador de \textcite{kurpath2024teleoperation}, que utiliza tres unidades de medición inercial (IMU) y potenciómetros para capturar funciones del brazo y la mano. En su propuesta, las IMU registran la orientación de segmentos del miembro superior y los datos se utilizan para calcular ángulos articulares humanos que posteriormente se mapean a un modelo robótico.
+
+El trabajo anterior demuestra que una arquitectura wearable puede concentrar la captura del movimiento de un miembro superior en un número limitado de sensores inerciales. Sin embargo, también evidencia que la teleoperación no se resuelve únicamente obteniendo cuaterniones u orientaciones: es necesario convertir esas mediciones en variables útiles para el control del robot, mantener relaciones consistentes entre segmentos y definir una correspondencia entre la configuración humana y la del manipulador.
+
+% FUENTE: P-EXP-001
+Otra familia de interfaces se apoya en control por imitación o \textit{mimicry control}. \textcite{rakita2020latency} estudian una interfaz en la que el usuario mueve los brazos para mostrar directamente al robot cómo debe desplazarse. Este tipo de interacción representa con claridad la motivación de las interfaces naturales de teleoperación: aprovechar el movimiento humano como entrada de control. No obstante, los resultados del estudio también muestran que la calidad de la interacción depende de la respuesta temporal del sistema, por lo que una interfaz físicamente intuitiva puede perder desempeño si la cadena de control introduce retrasos significativos.
+
+% INFERENCIA DE SÍNTESIS
+En conjunto, los sistemas wearable y de imitación ofrecen una alternativa a la operación explícita de articulaciones mediante botones o joysticks, pero trasladan la complejidad hacia otros bloques: calibración, estimación de pose, mapeo humano--robot, filtrado, manejo de límites y latencia. Por ello, la conveniencia de una interfaz wearable debe evaluarse por desempeño medible y no únicamente por la impresión subjetiva de naturalidad.
+
+\section{Motion mapping humano--robot}
+
+El \textit{motion mapping} determina cómo se transforma el movimiento capturado del operador en una referencia para el manipulador. Durante la revisión se identificaron tres familias principales: mapeo articular, mapeo cartesiano y control basado en velocidad. Estas estrategias no son equivalentes, ya que difieren en la forma en que dependen de la anatomía humana, de la geometría del robot y de las variables que se desean controlar.
+
+% FUENTE: P-SEN-003
+El mapeo articular busca establecer una correspondencia entre variables articulares humanas y variables articulares robóticas. \textcite{kurpath2024teleoperation} presentan un ejemplo de esta filosofía: las orientaciones medidas por las IMU se procesan para obtener ángulos del brazo humano y dichos ángulos se trasladan al modelo de brazo robótico. Esta estrategia puede resultar directa cuando la estructura humana y la robótica poseen relaciones cinemáticas compatibles, pero su aplicabilidad disminuye cuando existen diferencias relevantes en número de articulaciones, ejes, límites o proporciones geométricas.
+
+% INFERENCIA DE SÍNTESIS DEL ESTADO DEL ARTE
+El mapeo cartesiano, en cambio, expresa la intención del operador mediante variables del efector final, por ejemplo posición y orientación de la mano, y posteriormente utiliza la cinemática inversa del robot para obtener referencias articulares. Esta separación permite que el espacio de trabajo humano y el robótico no tengan que ser geométricamente idénticos. También permite aplicar escalamiento, offsets y mecanismos de recentrado antes de resolver la cinemática del manipulador. Su costo técnico es que requiere definir marcos de referencia, transformaciones, límites cartesianos, tratamiento de singularidades y un método de cinemática inversa suficientemente estable.
+
+El control por velocidad interpreta el movimiento humano como una dirección o magnitud de desplazamiento en lugar de intentar reproducir directamente una pose. Esta alternativa puede ser útil cuando interesa recorrer espacios de trabajo mayores que el alcance físico del operador o cuando se desea desacoplar la postura humana de la configuración instantánea del robot. A cambio, la relación entre gesto y movimiento del efector puede ser menos inmediata y requiere definir ganancias, zonas muertas y mecanismos de detención.
+
+% DECISIÓN/PROPUESTA DEL PROYECTO: D-001 continúa como propuesta principal.
+Para el sistema de esta tesis, la revisión conduce a mantener como candidata principal una estrategia cartesiana relativa: el movimiento de la mano del operador define una pose deseada del efector final y el manipulador resuelve posteriormente la cinemática inversa. El control del gripper se conserva como un canal independiente. Esta selección aún requiere validación experimental y no implica que todas las tareas deban utilizar simultáneamente los seis componentes de pose; la dimensionalidad efectiva puede reducirse cuando la orientación no sea relevante para una tarea determinada.
+
+\section{Captura del movimiento del operador}
+
+La captura del movimiento determina la calidad de las variables que alimentan al \textit{motion mapping}. En sistemas portables, las IMU son atractivas por su tamaño, disponibilidad y capacidad para estimar orientación sin infraestructura óptica externa. No obstante, una orientación inercial no equivale por sí sola a una reconstrucción correcta de la pose del miembro superior. La estimación de la mano depende de la relación entre sensores y segmentos corporales, de las longitudes utilizadas en el modelo, de la calibración inicial y del error acumulado durante la operación.
+
+% FUENTE: P-SEN-003
+El controlador de \textcite{kurpath2024teleoperation} es especialmente relevante porque utiliza tres IMU para representar el brazo humano dentro de una interfaz de teleoperación y combina sus mediciones mediante relaciones de orientación relativa. El trabajo muestra que es posible reducir el número de sensores sin abandonar la captura de múltiples grados de libertad del miembro superior. Al mismo tiempo, su arquitectura confirma que el procesamiento posterior a la medición inercial es un bloque esencial: las orientaciones deben transformarse en variables cinemáticas antes de poder controlar el robot.
+
+% DECISIÓN DEL PROYECTO: D-002
+A partir de la revisión, el sistema propuesto adopta una arquitectura de tres IMU ubicadas en brazo, antebrazo y mano, manteniendo el torso aproximadamente fijo durante la teleoperación. La posición de la mano se plantea mediante una reconstrucción geométrica de los segmentos y la orientación de la mano mediante la IMU distal. Esta arquitectura evita convertir la reconstrucción anatómica completa del miembro superior en un objetivo de la tesis, pero obliga a validar cuantitativamente calibración, repetibilidad, deriva, error de orientación, error de posición y sensibilidad a la colocación de los sensores.
+
+% PENDIENTE DE TRAZABILIDAD:
+% Añadir aquí la referencia aceptada de calibración funcional + estática y
+% las fuentes aceptadas de sensor fusion cuando el registro final de 01
+% esté consolidado.
+La estrategia concreta de fusión sensorial permanece como un parámetro de diseño que debe demostrarse experimentalmente. De forma similar, el uso del magnetómetro no debe asumirse como una corrección universal, ya que su utilidad depende del entorno magnético real. Por ello, la arquitectura final deberá evaluarse en condiciones representativas de la estación de teleoperación y no sólo mediante pruebas estáticas de orientación.
+
+\section{Sensado de fuerza en el gripper}
+
+La retroalimentación de fuerza sólo puede utilizarse como variable experimental si la magnitud medida posee una relación cuantitativa y repetible con la interacción mecánica del gripper. Para este propósito, el sensado directo mediante elementos deformables instrumentados con galgas extensométricas constituye una alternativa relevante, debido a que permite convertir una carga mecánica en una señal eléctrica calibrable.
+
+% FUENTE: P-FRC-002
+\textcite{kuang2018force} diseñan un sensor de fuerza para grippers robóticos basado en galgas extensométricas. El trabajo parte del problema de las distribuciones de esfuerzo que aparecen cuando existen offsets laterales en estructuras compactas de agarre y propone una geometría específica para mejorar la medición en ese contexto. La aportación es pertinente para este proyecto porque el sensor no se plantea como un elemento externo a la mecánica del gripper, sino como parte de la trayectoria de transmisión de carga.
+
+% INFERENCIA DE DISEÑO
+La comparación realizada durante el Estado del Arte distingue entre medición directa y estimación indirecta. Sensores resistivos de fuerza pueden simplificar la integración, mientras que la corriente o el torque estimado del actuador pueden aportar información auxiliar; sin embargo, estas señales incorporan efectos mecánicos y eléctricos que no necesariamente representan de forma exclusiva la fuerza ejercida sobre el objeto. Cuando la fuerza de agarre se desea utilizar como métrica de la tesis, la cadena de medición debe priorizar calibración, repetibilidad y trazabilidad metrológica por encima de la simplicidad de integración.
+
+% DECISIÓN DEL PROYECTO: D-003
+En consecuencia, el proyecto adopta como método principal el sensado directo mediante \textit{strain gauge}/celda de carga integrado en la trayectoria de fuerza del gripper. Antes del experimento con usuarios deberán determinarse rango, linealidad, histéresis, resolución, frecuencia de muestreo, saturación e incertidumbre. Esta validación es necesaria para que métricas como fuerza máxima o fuerza excesiva tengan significado experimental.
+
+\section{Retroalimentación háptica}
+
+La retroalimentación háptica busca devolver al operador información que no se encuentra disponible únicamente a través del canal visual. En telemanipulación, esta información puede relacionarse con contacto, fuerza de agarre, aceleración, textura o restricciones de movimiento. La modalidad elegida determina cuánta información puede transmitirse, pero también condiciona el peso, la complejidad mecánica, el consumo y la libertad de movimiento de la interfaz wearable.
+
+% FUENTE: P-EXP-002
+El estudio de \textcite{louca2024haptic} demuestra que el efecto de añadir feedback háptico depende tanto de la tarea como de la latencia. En teleoperación en tiempo real, los autores observaron mejoras en variables como tasa de éxito, precisión, fuerza de contacto, velocidad de movimiento y confianza. Sin embargo, al aumentar el retraso de comunicación, varias de esas ventajas disminuyeron o incluso se invirtieron, mientras que los efectos favorables sobre fuerza de contacto y velocidad fueron más persistentes. El resultado es especialmente importante porque muestra que el feedback háptico no debe evaluarse como una mejora universal y aislada del comportamiento temporal del sistema.
+
+La literatura revisada durante el proyecto incluyó modalidades vibrotáctiles, kinestésicas, electrotáctiles, de \textit{skin stretch} y neumáticas. Las soluciones kinestésicas pueden reproducir fuerzas de forma más directa, pero requieren mecanismos capaces de aplicar fuerzas o resistencias al cuerpo del operador. Las soluciones vibrotáctiles reducen esa complejidad y permiten codificar magnitudes mediante amplitud, frecuencia o patrones temporales, aunque no reproducen físicamente la misma sensación de fuerza.
+
+% DECISIÓN DEL PROYECTO: D-004
+El MVP de esta tesis adopta retroalimentación vibrotáctil y prioriza la magnitud de la fuerza de agarre como variable a comunicar. La selección no implica afirmar que la vibración sea la modalidad de mayor fidelidad; responde al balance entre información transmitida, complejidad, costo e integración dentro de una interfaz portable. El mapeo inicial fuerza--vibración se plantea con umbral de contacto, zona útil y saturación, parámetros que deberán definirse y validarse posteriormente.
+
+% PENDIENTE DE TRAZABILIDAD:
+% Integrar las fuentes aceptadas específicamente vibrotáctiles cuando la
+% matriz final de 01 sea recuperada; no convertir esta síntesis en evidencia
+% bibliográfica sin su referencia primaria correspondiente.
+
+\section{Precisión, estabilidad, filtrado y latencia}
+
+En una interfaz de teleoperación, la estabilidad no depende solamente del controlador del robot. Ruido de sensores, deriva inercial, cuantización, actualización irregular, escalamiento excesivo y retrasos de comunicación pueden transformar pequeños movimientos del operador en oscilaciones, errores o respuestas difíciles de anticipar. Por ello, precisión y latencia deben analizarse como propiedades de la cadena completa desde el movimiento humano hasta la respuesta física del robot y el retorno háptico.
+
+% FUENTE: P-EXP-001
+\textcite{rakita2020latency} distinguen entre retraso de inicio de movimiento y lentitud propia del robot dentro de una interfaz de control por imitación. Sus resultados muestran que los operadores pueden desarrollar estrategias para compensar cierto tipo de lentitud, pero tienen mayores dificultades para adaptarse a retrasos de inicio. Esta diferencia es relevante porque dos sistemas con tiempos globales semejantes pueden producir experiencias de control distintas dependiendo de dónde se origine el retraso.
+
+% FUENTE: P-EXP-002
+De forma complementaria, \textcite{louca2024haptic} muestran que el incremento de latencia degrada múltiples métricas de desempeño y modifica el valor del feedback háptico. La interacción entre retardo y modalidad de retroalimentación implica que no basta con registrar un único valor de ``latencia del sistema''. Para evaluar correctamente una interfaz bidireccional conviene distinguir al menos el camino operador--robot y el camino fuerza--feedback, además de mantener timestamps sincronizados para reconstruir los eventos experimentales.
+
+% INFERENCIA DE REQUERIMIENTOS
+Estas observaciones convierten al filtrado y a la respuesta temporal en requerimientos de diseño y no en simples ajustes finales. El sistema deberá evitar que el filtrado reduzca ruido a costa de introducir un retardo perceptible, y deberá cuantificar jitter, frecuencia de actualización, deriva y errores de pose durante periodos representativos de operación. Asimismo, mecanismos como recentrado o \textit{clutch} deberán registrarse durante los experimentos, ya que su uso puede revelar problemas de acumulación de error o límites del espacio de trabajo.
+
+\section{Evaluación experimental de interfaces de teleoperación}
+
+Una comparación defendible entre interfaces requiere separar los efectos producidos por el método de control de aquellos generados por diferencias en tarea, visión, entrenamiento, velocidad o feedback. El Estado del Arte revisado muestra que el desempeño puede cambiar según la naturaleza de la tarea y que una única métrica, como tiempo de finalización, no es suficiente para describir la calidad de una interfaz.
+
+% FUENTE: P-EXP-001
+\textcite{rakita2020latency} utilizaron un diseño intra-sujeto con 21 participantes y siete condiciones de retraso. La evaluación incluyó tareas con características diferentes: manipulación de objetos, movimiento continuo y trazado fino. Además de resultados finales, el estudio registró información temporal y trayectorias del usuario y del robot. Esta metodología resulta relevante porque permite observar cómo cambia la estrategia del operador y no sólo si una tarea fue completada.
+
+% FUENTE: P-EXP-002
+\textcite{louca2024haptic} evaluaron 30 participantes en tareas de contacto y posicionamiento bajo combinaciones de feedback y latencia. El diseño consideró control del orden de las condiciones y métricas como éxito, tiempo, precisión y fuerzas de contacto. Sus resultados muestran que el feedback puede mejorar variables de seguridad o interacción aun cuando el tiempo de ejecución no mejore, por lo que la interpretación de la interfaz debe apoyarse en un conjunto de métricas complementarias.
+
+% PROPUESTA EXPERIMENTAL, TODAVÍA NO DECISIÓN FINAL
+Para esta tesis se plantea una comparación base entre tres condiciones: control convencional, wearable sin feedback háptico y wearable con feedback háptico. El contraste entre control convencional y wearable permitirá analizar el efecto de la interfaz de movimiento, mientras que el contraste entre wearable sin y con háptica permitirá aislar el efecto del canal de retroalimentación. Para que esta comparación sea causalmente interpretable, las dos condiciones wearable deberán mantener constantes el robot, la tarea, el método de visualización, la velocidad y el resto de parámetros de control.
+
+Las métricas candidatas incluyen tasa de éxito, tiempo de ejecución, error final de posición, error de orientación cuando la tarea lo exija, colisiones, longitud de trayectoria, fuerza máxima, eventos de agarre, caídas y reaperturas del gripper. Como medidas subjetivas se consideran instrumentos estandarizados para carga de trabajo y usabilidad. El número de participantes, repeticiones, tolerancias, dificultad de la tarea y prueba estadística no deben fijarse copiando valores de otros estudios; deberán establecerse mediante piloto, definición de la variable principal y análisis de potencia cuando corresponda.
+
+\section{Síntesis del Estado del Arte}
+
+La revisión realizada no muestra una arquitectura única que sea superior para todas las tareas de teleoperación. Los sistemas wearable permiten capturar intención de movimiento de forma directa, pero trasladan la dificultad hacia la calibración, la estimación de pose y el mapeo. El mapeo articular puede ser sencillo cuando humano y robot poseen estructuras compatibles, mientras que una representación cartesiana ofrece mayor independencia morfológica a costa de requerir transformaciones e integración con cinemática inversa. De igual forma, un número reducido de IMU puede ser suficiente para una interfaz funcional, siempre que la reconstrucción y la calibración sean validadas cuantitativamente.
+
+En el canal de retorno, la literatura confirma que el feedback háptico puede aportar información útil para interacción y control de fuerza, pero su beneficio depende de la tarea y de la latencia. Esto impide asumir que añadir háptica mejorará automáticamente el tiempo de operación. Para estudiar fuerza de agarre de forma cuantitativa, el sensor del gripper debe constituir una cadena de medición calibrada y repetible, no solamente un detector de contacto.
+
+% DECISIONES DEL PROYECTO DERIVADAS/INFORMADAS POR LA REVISIÓN
+Estas conclusiones delimitan la arquitectura del proyecto. Se adopta una captura con tres IMU en brazo, antebrazo y mano; un manipulador de seis grados de libertad para conservar capacidad de pose espacial completa cuando la tarea la requiera; sensado directo de fuerza mediante galgas extensométricas o celda de carga; y feedback vibrotáctil como modalidad del MVP. El mapeo cartesiano relativo seguido de cinemática inversa permanece como propuesta principal pendiente de adopción formal.
+
+Finalmente, el Estado del Arte también define cómo debe demostrarse el sistema. La evaluación no debe limitarse a verificar que el robot responde a los movimientos del operador. La tesis deberá medir precisión, repetibilidad, fuerzas, errores, latencia y desempeño en tareas comparables, además de contrastar la interfaz wearable frente a una alternativa convencional y aislar el efecto de la retroalimentación háptica. De esta forma, la literatura revisada se conecta directamente con los requerimientos y con la metodología experimental desarrollados en los capítulos siguientes.
