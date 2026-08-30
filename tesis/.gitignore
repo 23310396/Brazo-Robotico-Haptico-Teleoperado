@@ -1,0 +1,32 @@
+# Directorio de compilación
+build/
+
+# Auxiliares LaTeX / BibLaTeX / Biber
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.log
+*.lot
+*.out
+*.run.xml
+*.synctex.gz
+*.toc
+*.xdv
+*.nav
+*.snm
+*.vrb
+
+# Temporales de editores
+*.bak
+*.sav
+*.swp
+*.tmp
+*~
+
+# Salidas compiladas en la raíz de tesis
+/main.pdf
+/Tesis_Brazo_Haptico_Teleoperado.pdf
