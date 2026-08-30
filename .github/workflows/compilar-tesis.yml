@@ -28,6 +28,9 @@ jobs:
           texlive_version: 2026
           latexmk_use_lualatex: true
 
+      - name: Preparar PDF final
+        run: cp tesis/build/main.pdf tesis/build/Tesis_Brazo_Haptico_Teleoperado.pdf
+
       - name: Subir PDF compilado
         uses: actions/upload-artifact@v6
         with:
