@@ -1,0 +1,56 @@
+% ============================================================
+% Paquetes generales del proyecto
+% Motor recomendado: LuaLaTeX
+% ============================================================
+
+\usepackage{fontspec}
+\usepackage[spanish,es-nodecimaldot,es-ucroman]{babel}
+\usepackage{csquotes}
+\usepackage{microtype}
+
+% Layout base. Si CETI entrega un formato institucional, se ajusta aquí.
+\usepackage[margin=2.54cm]{geometry}
+\usepackage{setspace}
+\doublespacing
+\setlength{\parindent}{1.27cm}
+\setlength{\parskip}{0pt}
+
+% Matemáticas, unidades y símbolos
+\usepackage{mathtools}
+\usepackage{amssymb}
+\usepackage{siunitx}
+\sisetup{output-decimal-marker={,},per-mode=symbol}
+
+% Figuras y tablas
+\usepackage{graphicx}
+\graphicspath{{figuras/}}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{caption}
+
+% Listas y flotantes
+\usepackage{enumitem}
+\usepackage{placeins}
+
+% URLs, hipervínculos y referencias cruzadas
+\usepackage{xurl}
+\usepackage[hidelinks]{hyperref}
+\usepackage{bookmark}
+\usepackage[nameinlink,noabbrev]{cleveref}
+
+\emergencystretch=3em
+\setcounter{secnumdepth}{3}
+\setcounter{tocdepth}{2}
+
+\crefname{figure}{figura}{figuras}
+\Crefname{figure}{Figura}{Figuras}
+\crefname{table}{tabla}{tablas}
+\Crefname{table}{Tabla}{Tablas}
+\crefname{chapter}{capítulo}{capítulos}
+\Crefname{chapter}{Capítulo}{Capítulos}
+\crefname{section}{sección}{secciones}
+\Crefname{section}{Sección}{Secciones}
+\crefname{equation}{ecuación}{ecuaciones}
+\Crefname{equation}{Ecuación}{Ecuaciones}
