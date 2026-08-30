@@ -15,6 +15,37 @@
 \setlength{\parindent}{1.27cm}
 \setlength{\parskip}{0pt}
 
+% Jerarquía visual de capítulos y secciones.
+% APA 7 gobierna redacción/citación; esta capa mantiene una apariencia
+% sobria de tesis sin los títulos sobredimensionados de la clase report.
+\usepackage{titlesec}
+\titleformat{\chapter}[display]
+  {\normalfont\bfseries\raggedright}
+  {\fontsize{12}{14}\selectfont\chaptertitlename\ \thechapter}
+  {0.25em}
+  {\fontsize{16}{19}\selectfont}
+\titlespacing*{\chapter}{0pt}{0pt}{1.35em}
+
+\titleformat{name=\chapter,numberless}[block]
+  {\normalfont\bfseries\raggedright\fontsize{16}{19}\selectfont}
+  {}{0pt}{}
+\titlespacing*{name=\chapter,numberless}{0pt}{0pt}{1.35em}
+
+\titleformat{\section}
+  {\normalfont\bfseries\raggedright\fontsize{13}{16}\selectfont}
+  {\thesection}{0.7em}{}
+\titlespacing*{\section}{0pt}{1.35em}{0.55em}
+
+\titleformat{\subsection}
+  {\normalfont\bfseries\raggedright\fontsize{12}{15}\selectfont}
+  {\thesubsection}{0.7em}{}
+\titlespacing*{\subsection}{0pt}{1.1em}{0.45em}
+
+\titleformat{\subsubsection}
+  {\normalfont\bfseries\itshape\raggedright\fontsize{12}{15}\selectfont}
+  {\thesubsubsection}{0.7em}{}
+\titlespacing*{\subsubsection}{0pt}{1em}{0.4em}
+
 % Matemáticas, unidades y símbolos
 \usepackage{mathtools}
 \usepackage{amssymb}
