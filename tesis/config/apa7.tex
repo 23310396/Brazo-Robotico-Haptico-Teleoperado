@@ -1,0 +1,38 @@
+% ============================================================
+% APA Séptima Edición: citas, referencias y presentación base
+% de tablas/figuras. No sustituye requisitos institucionales.
+% ============================================================
+
+\usepackage[
+  backend=biber,
+  style=apa,
+  sortcites=true
+]{biblatex}
+\DeclareLanguageMapping{spanish}{spanish-apa}
+\addbibresource{referencias.bib}
+
+% Permite omitir una sección de referencias vacía durante la fase de infraestructura.
+\newif\ifbibliographydefined
+\bibliographydefinedfalse
+\AtDataInput{\global\bibliographydefinedtrue}
+
+% APA 7: número en negritas y título en línea separada, en cursivas.
+\captionsetup{
+  labelfont=bf,
+  textfont=it,
+  labelsep=newline,
+  justification=raggedright,
+  singlelinecheck=false
+}
+
+% Nota APA reutilizable debajo de figura/tabla.
+\newcommand{\apanote}[1]{%
+  \par\smallskip\noindent\footnotesize\textit{Nota.} #1\par
+}
+
+\hypersetup{
+  pdftitle={\ThesisTitle},
+  pdfauthor={\ThesisAuthorOne; \ThesisAuthorTwo},
+  pdfsubject={Proyecto de titulación - Ingeniería Mecatrónica},
+  pdfcreator={LuaLaTeX}
+}
