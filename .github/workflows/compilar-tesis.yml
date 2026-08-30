@@ -1,0 +1,36 @@
+name: Compilar tesis LaTeX
+
+on:
+  push:
+    paths:
+      - 'tesis/**'
+      - '.github/workflows/compilar-tesis.yml'
+  pull_request:
+    paths:
+      - 'tesis/**'
+      - '.github/workflows/compilar-tesis.yml'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Compilar tesis
+        uses: xu-cheng/latex-action@v4
+        with:
+          root_file: main.tex
+          working_directory: tesis
+          work_in_root_file_dir: true
+          texlive_version: 2026
+          latexmk_use_lualatex: true
+
+      - name: Subir PDF compilado
+        uses: actions/upload-artifact@v6
+        with:
+          name: Tesis_Brazo_Haptico_Teleoperado
+          path: tesis/build/Tesis_Brazo_Haptico_Teleoperado.pdf
+          if-no-files-found: error
