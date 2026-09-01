@@ -47,7 +47,35 @@ q_H_B = q_H_N * q_N_S * q_S_B
 
 La estimación física de `q_S_B` mediante calibración funcional + estática queda para una etapa posterior.
 
-## Pruebas
+## Demo explicativa
+
+Además de las pruebas automáticas existe `demo.py`, pensada para entender la lógica sin tener que leer primero todo el código.
+
+La demo imprime en cada ejemplo tres secciones:
+
+```text
+TENEMOS     -> datos de entrada
+CALCULAMOS  -> operación geométrica que se realiza
+OBTENEMOS   -> posición/orientación calculada
+```
+
+Ejecutar desde la raíz del repositorio:
+
+```bash
+python wearable/sensors/pose_pipeline/demo.py
+```
+
+También se puede abrir `demo.py` en Codespaces y usar el botón **Run**.
+
+La demo incluye:
+
+1. brazo y antebrazo totalmente extendidos: `0.30 + 0.25 = 0.55 m`;
+2. codo a 90 grados: muñeca en `(0.30, 0.00, 0.25) m`;
+3. giro de 30 grados sólo en la mano: cambia la orientación pero no la posición de la muñeca.
+
+La demo es didáctica. No sustituye las pruebas automáticas.
+
+## Pruebas automáticas
 
 Todas las pruebas del módulo están contenidas en `tests/`.
 
