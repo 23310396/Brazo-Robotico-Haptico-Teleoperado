@@ -34,12 +34,14 @@ pose_pipeline/
 |   |-- README.md
 |   |-- angular_sensitivity.py
 |   |-- calibration_sensitivity.py
-|   `-- noise_jitter.py
+|   |-- noise_jitter.py
+|   `-- drift.py
 `-- tests/                         # pruebas automáticas de todo el módulo
     |-- test_pipeline.py
     |-- test_angular_sensitivity.py
     |-- test_calibration_sensitivity.py
-    `-- test_noise_jitter.py
+    |-- test_noise_jitter.py
+    `-- test_drift.py
 ```
 
 El código de análisis no se mezcla con el pipeline que después consumirá el robot.
@@ -132,7 +134,17 @@ python wearable/sensors/pose_pipeline/analysis/noise_jitter.py
 
 Simula orientaciones que fluctúan alrededor del valor real y cuantifica cómo ese ruido se transforma en jitter de posición de muñeca y orientación de mano, tanto con el brazo quieto como durante una trayectoria sintética.
 
-Los niveles de ruido utilizados son escenarios sintéticos y **no representan la precisión de una IMU real ni un requisito del proyecto**.
+### Drift angular
+
+```bash
+python wearable/sensors/pose_pipeline/analysis/drift.py
+```
+
+Simula una deriva angular progresiva mientras la pose física permanece fija. Permite cuantificar cómo el error acumulativo en brazo, antebrazo, mano o las tres IMUs se transforma en error de posición y orientación con el paso del tiempo.
+
+Esta primera versión no aplica ningún mecanismo de corrección; caracteriza el problema antes de elegir filtros, recenter o correcciones de heading.
+
+Los niveles de ruido y las tasas de drift utilizados son escenarios sintéticos y **no representan la precisión de una IMU real ni un requisito del proyecto**.
 
 ## Pruebas automáticas
 
@@ -144,7 +156,7 @@ Ejecutar desde la raíz del repositorio:
 python -m unittest discover -s wearable/sensors/pose_pipeline/tests -v
 ```
 
-Las pruebas cubren la geometría base, quaternions, calibración conocida, sincronización, sensibilidad angular, errores residuales de calibración y ruido/jitter reproducible.
+Las pruebas cubren la geometría base, quaternions, calibración conocida, sincronización, sensibilidad angular, errores residuales de calibración, ruido/jitter reproducible y drift sintético.
 
 GitHub Actions ejecuta automáticamente este mismo conjunto cuando cambia contenido dentro de `wearable/`.
 
