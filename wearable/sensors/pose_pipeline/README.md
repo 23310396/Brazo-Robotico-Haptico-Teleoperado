@@ -23,6 +23,23 @@ Cada orientación puede venir después de una IMU real, de un archivo o de datos
 
 La salida termina en el frame humano. El mapping humano -> robot y la IK se implementarán después en 03.
 
+## Organización
+
+```text
+pose_pipeline/
+|-- pipeline.py          # núcleo matemático
+|-- synthetic.py         # generación de entradas sintéticas
+|-- demo.py              # demostración didáctica V0
+|-- analysis/            # análisis de sensibilidad V1 y posteriores
+|   |-- README.md
+|   `-- angular_sensitivity.py
+`-- tests/               # pruebas automáticas de todo el módulo
+    |-- test_pipeline.py
+    `-- test_angular_sensitivity.py
+```
+
+El código de análisis no se mezcla con el pipeline que después consumirá el robot.
+
 ## Modelo geométrico
 
 Con el hombro como origen y el eje local +X de cada segmento apuntando hacia su extremo distal:
@@ -47,7 +64,7 @@ q_H_B = q_H_N * q_N_S * q_S_B
 
 La estimación física de `q_S_B` mediante calibración funcional + estática queda para una etapa posterior.
 
-## Demo explicativa
+## Demo explicativa V0
 
 Además de las pruebas automáticas existe `demo.py`, pensada para entender la lógica sin tener que leer primero todo el código.
 
@@ -75,6 +92,25 @@ La demo incluye:
 
 La demo es didáctica. No sustituye las pruebas automáticas.
 
+## Análisis de sensibilidad V1
+
+Los análisis que perturban deliberadamente las entradas se guardan en `analysis/`.
+
+El primer análisis estudia cuánto error de posición aparece cuando introducimos errores angulares sintéticos en las orientaciones:
+
+```bash
+python wearable/sensors/pose_pipeline/analysis/angular_sensitivity.py
+```
+
+Prueba por separado:
+
+- error en brazo;
+- error en antebrazo;
+- el mismo error en ambos;
+- error únicamente en mano.
+
+Los ángulos utilizados son escenarios sintéticos de estudio y **no representan la precisión de una IMU real ni un requisito del proyecto**.
+
 ## Pruebas automáticas
 
 Todas las pruebas del módulo están contenidas en `tests/`.
@@ -85,7 +121,7 @@ Ejecutar desde la raíz del repositorio:
 python -m unittest discover -s wearable/sensors/pose_pipeline/tests -v
 ```
 
-Casos cubiertos:
+Casos V0 cubiertos:
 
 1. brazo y antebrazo rectos: 0.30 m + 0.25 m = 0.55 m;
 2. codo a 90 grados: muñeca en `(0.30, 0.00, 0.25)` m;
@@ -96,6 +132,8 @@ Casos cubiertos:
 7. longitudes no físicas se rechazan;
 8. quaternion de norma cero se rechaza;
 9. composición sensor + corrección recupera identidad.
+
+La V1 añade pruebas sobre la respuesta del modelo ante errores angulares sintéticos.
 
 ## Criterio de validación V0
 
