@@ -33,11 +33,13 @@ pose_pipeline/
 |-- analysis/                      # análisis de sensibilidad V1 y posteriores
 |   |-- README.md
 |   |-- angular_sensitivity.py
-|   `-- calibration_sensitivity.py
+|   |-- calibration_sensitivity.py
+|   `-- noise_jitter.py
 `-- tests/                         # pruebas automáticas de todo el módulo
     |-- test_pipeline.py
     |-- test_angular_sensitivity.py
-    `-- test_calibration_sensitivity.py
+    |-- test_calibration_sensitivity.py
+    `-- test_noise_jitter.py
 ```
 
 El código de análisis no se mezcla con el pipeline que después consumirá el robot.
@@ -122,7 +124,15 @@ orientación reconstruida = 47°
 error residual = 2°
 ```
 
-Los valores utilizados son escenarios sintéticos y **no representan la precisión de una IMU real ni un requisito del proyecto**.
+### Ruido y jitter
+
+```bash
+python wearable/sensors/pose_pipeline/analysis/noise_jitter.py
+```
+
+Simula orientaciones que fluctúan alrededor del valor real y cuantifica cómo ese ruido se transforma en jitter de posición de muñeca y orientación de mano, tanto con el brazo quieto como durante una trayectoria sintética.
+
+Los niveles de ruido utilizados son escenarios sintéticos y **no representan la precisión de una IMU real ni un requisito del proyecto**.
 
 ## Pruebas automáticas
 
@@ -134,7 +144,15 @@ Ejecutar desde la raíz del repositorio:
 python -m unittest discover -s wearable/sensors/pose_pipeline/tests -v
 ```
 
-Las pruebas cubren la geometría base, quaternions, calibración conocida, sincronización, sensibilidad angular y sensibilidad a errores residuales de calibración.
+Las pruebas cubren la geometría base, quaternions, calibración conocida, sincronización, sensibilidad angular, errores residuales de calibración y ruido/jitter reproducible.
+
+GitHub Actions ejecuta automáticamente este mismo conjunto cuando cambia contenido dentro de `wearable/`.
+
+## Relación con la validación física
+
+El objetivo antes de conectar el robot es que la manga física alimente este pipeline y que una visualización en tiempo real permita observar los segmentos reconstruidos del brazo y sus orientaciones.
+
+Eso permitirá comparar el movimiento físico con el modelo digital y medir estabilidad, error, ruido, drift, sincronización y repetibilidad antes de pasar al mapping humano -> robot.
 
 ## Criterio de validación V0
 
