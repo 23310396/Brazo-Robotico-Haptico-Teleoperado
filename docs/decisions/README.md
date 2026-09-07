@@ -13,6 +13,7 @@ Cada `D-XXX` conserva su propio archivo para mantener historial, alternativas, j
 | [D-003](./D-003-sensado-directo-fuerza-gripper.md) | Sensado directo de fuerza en gripper | DECISIÓN ADOPTADA |
 | [D-004](./D-004-feedback-vibrotactil-mvp.md) | Retroalimentación vibrotáctil para MVP | DECISIÓN ADOPTADA |
 | [D-005](./D-005-integracion-modular-humanoide.md) | Integración modular 6R con plataforma humanoide | DECISIÓN ADOPTADA |
+| [D-006](./D-006-validar-wearable-antes-de-integrar-robot.md) | Validar wearable físico antes de integrar el robot | DECISIÓN ADOPTADA |
 
 ## Regla de uso
 
