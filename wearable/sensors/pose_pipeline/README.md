@@ -30,18 +30,20 @@ pose_pipeline/
 |-- pipeline.py                    # núcleo matemático
 |-- synthetic.py                   # generación de entradas sintéticas
 |-- demo.py                        # demostración didáctica V0
-|-- analysis/                      # análisis de sensibilidad V1 y posteriores
+|-- analysis/                      # análisis de sensibilidad V1
 |   |-- README.md
 |   |-- angular_sensitivity.py
 |   |-- calibration_sensitivity.py
 |   |-- noise_jitter.py
-|   `-- drift.py
+|   |-- drift.py
+|   `-- desynchronization.py
 `-- tests/                         # pruebas automáticas de todo el módulo
     |-- test_pipeline.py
     |-- test_angular_sensitivity.py
     |-- test_calibration_sensitivity.py
     |-- test_noise_jitter.py
-    `-- test_drift.py
+    |-- test_drift.py
+    `-- test_desynchronization.py
 ```
 
 El código de análisis no se mezcla con el pipeline que después consumirá el robot.
@@ -116,16 +118,6 @@ offset estimado por calibración
 error residual de calibración
 ```
 
-Incluye el ejemplo:
-
-```text
-antebrazo real = 45°
-IMU con 10° de offset físico -> lectura equivalente = 55°
-calibración estima 8°
-orientación reconstruida = 47°
-error residual = 2°
-```
-
 ### Ruido y jitter
 
 ```bash
@@ -142,9 +134,17 @@ python wearable/sensors/pose_pipeline/analysis/drift.py
 
 Simula una deriva angular progresiva mientras la pose física permanece fija. Permite cuantificar cómo el error acumulativo en brazo, antebrazo, mano o las tres IMUs se transforma en error de posición y orientación con el paso del tiempo.
 
-Esta primera versión no aplica ningún mecanismo de corrección; caracteriza el problema antes de elegir filtros, recenter o correcciones de heading.
+### Desincronización dinámica
 
-Los niveles de ruido y las tasas de drift utilizados son escenarios sintéticos y **no representan la precisión de una IMU real ni un requisito del proyecto**.
+```bash
+python wearable/sensors/pose_pipeline/analysis/desynchronization.py
+```
+
+Compara una pose ideal, donde las tres orientaciones corresponden al mismo instante, contra reconstrucciones donde los sensores pertenecen a instantes distintos durante movimiento.
+
+También separa desincronización relativa de retardo común: tres sensores pueden estar perfectamente sincronizados entre sí y aun así representar una pose antigua por latencia.
+
+Los tiempos, velocidades, niveles de ruido y tasas de drift utilizados son escenarios sintéticos y **no representan especificaciones de una IMU real ni requisitos adoptados por el proyecto**.
 
 ## Pruebas automáticas
 
@@ -156,7 +156,7 @@ Ejecutar desde la raíz del repositorio:
 python -m unittest discover -s wearable/sensors/pose_pipeline/tests -v
 ```
 
-Las pruebas cubren la geometría base, quaternions, calibración conocida, sincronización, sensibilidad angular, errores residuales de calibración, ruido/jitter reproducible y drift sintético.
+Las pruebas cubren geometría base, quaternions, calibración conocida, timestamps, sensibilidad angular, errores residuales de calibración, ruido/jitter reproducible, drift sintético y desincronización dinámica.
 
 GitHub Actions ejecuta automáticamente este mismo conjunto cuando cambia contenido dentro de `wearable/`.
 
@@ -165,6 +165,21 @@ GitHub Actions ejecuta automáticamente este mismo conjunto cuando cambia conten
 El objetivo antes de conectar el robot es que la manga física alimente este pipeline y que una visualización en tiempo real permita observar los segmentos reconstruidos del brazo y sus orientaciones.
 
 Eso permitirá comparar el movimiento físico con el modelo digital y medir estabilidad, error, ruido, drift, sincronización y repetibilidad antes de pasar al mapping humano -> robot.
+
+## Cierre de la fase sintética
+
+La caracterización sintética del pipeline cubre ya los efectos principales que necesitamos entender antes de comprar hardware:
+
+- error angular;
+- error residual de calibración;
+- ruido/jitter;
+- drift;
+- desincronización temporal durante movimiento;
+- diferencia conceptual entre skew interno y latencia común.
+
+No se propone seguir creando pruebas sintéticas indefinidamente. La repetibilidad real y los niveles físicos de ruido, drift y sincronización se medirán con el wearable construido.
+
+El siguiente incremento del proyecto es definir requisitos de adquisición de las 3 IMUs y utilizarlos para seleccionar IMU y microcontrolador con documentación oficial.
 
 ## Criterio de validación V0
 
