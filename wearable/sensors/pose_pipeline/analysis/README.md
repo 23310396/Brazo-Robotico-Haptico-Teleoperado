@@ -126,6 +126,55 @@ python wearable/sensors/pose_pipeline/analysis/noise_jitter.py
 
 Los valores de sigma son **escenarios sintéticos de análisis**. No representan especificaciones de una IMU real ni límites aceptados por el proyecto.
 
+## 4. Drift angular
+
+Archivo:
+
+```text
+drift.py
+```
+
+Este análisis estudia un error que no fluctúa alrededor del valor real, sino que se acumula progresivamente con el tiempo mientras la pose física permanece fija.
+
+Modelo sintético:
+
+```text
+drift acumulado = tasa de drift * tiempo
+```
+
+Se analiza por separado:
+
+1. drift sólo en brazo;
+2. drift sólo en antebrazo;
+3. drift sólo en mano;
+4. el mismo drift en las tres IMUs.
+
+Las tasas sintéticas usadas son:
+
+```text
+0, 0.01, 0.05, 0.10 y 0.25 °/s
+```
+
+durante un escenario de 60 s. Estos valores son únicamente parámetros de simulación: **no representan especificaciones de una IMU real ni criterios de aceptación del proyecto**.
+
+Se reportan:
+
+- drift angular acumulado al final;
+- RMS del error de posición;
+- error máximo de posición;
+- error final de posición;
+- RMS del error de orientación;
+- error máximo de orientación;
+- error final de orientación.
+
+La simulación no aplica filtro, magnetómetro, clutch ni recenter. Primero se caracteriza el problema sin mitigación.
+
+Ejecutar:
+
+```bash
+python wearable/sensors/pose_pipeline/analysis/drift.py
+```
+
 ## Formato de las demos
 
 Los análisis mantienen el formato:
@@ -160,6 +209,7 @@ La V1 todavía no valida hardware real. Busca caracterizar la sensibilidad matem
 - el problema relevante es el **error residual de calibración**, no simplemente que la IMU esté montada con cierto ángulo;
 - un error residual de calibración se propaga de la misma forma que un error angular equivalente en la orientación usada por el pipeline;
 - ruido angular variable puede convertirse en jitter de posición/orientación incluso cuando el operador está quieto;
-- durante movimiento puede cuantificarse cuánto se separa la trayectoria reconstruida de la ideal.
+- durante movimiento puede cuantificarse cuánto se separa la trayectoria reconstruida de la ideal;
+- una deriva angular progresiva puede convertirse en error acumulativo de posición u orientación según el segmento afectado.
 
 Los criterios físicos de error aceptable permanecen **PENDIENTES DE VALIDACIÓN** y deberán derivarse de la tarea experimental, la selección de sensores y mediciones reales.
