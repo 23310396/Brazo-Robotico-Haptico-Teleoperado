@@ -61,7 +61,14 @@ Actualmente permite:
 - reconstruir posición de codo y muñeca;
 - entregar orientación de mano;
 - trabajar con datos sintéticos;
-- ejecutar análisis de sensibilidad y pruebas automáticas.
+- cuantificar sensibilidad a error angular;
+- analizar error residual de calibración;
+- simular ruido/jitter;
+- simular drift;
+- estudiar desincronización dinámica y distinguirla de latencia común;
+- ejecutar pruebas automáticas mediante GitHub Actions.
+
+La caracterización sintética se considera suficiente para pasar al siguiente bloque. No se propone seguir agregando perturbaciones sintéticas sin una necesidad concreta.
 
 ### PROPUESTA DE ARQUITECTURA FÍSICA
 
@@ -80,6 +87,26 @@ pipeline de pose + visualización
 La función inicial candidata del microcontrolador es adquirir, marcar temporalmente y transmitir los datos. El procesamiento de calibración, reconstrucción y visualización permanecería inicialmente en PC para facilitar depuración y validación.
 
 No se ha seleccionado todavía el microcontrolador comercial ni la IMU final.
+
+## Siguiente incremento
+
+El siguiente paso es definir requisitos de adquisición física antes de comparar componentes.
+
+Se deberán especificar, sin inventar aún valores de fabricante:
+
+- qué dato debe entregar cada IMU al pipeline;
+- frecuencia de actualización requerida;
+- resolución temporal/timestamps;
+- estrategia de sincronización de tres sensores;
+- interfaz de comunicación viable;
+- formato de quaternion/orientación y convenciones de ejes;
+- disponibilidad de datos crudos si se requiere sensor fusion propio;
+- requisitos de latencia y registro de datos;
+- necesidades eléctricas y físicas de integración en la manga.
+
+Con esos requisitos se iniciará la selección justificada de IMU y microcontrolador usando datasheets y documentación oficial.
+
+La repetibilidad relevante para D-006 se medirá físicamente con el wearable construido, no mediante una simulación adicional que sólo repita datos generados por software.
 
 ## Criterio para pasar a integración con el robot
 
