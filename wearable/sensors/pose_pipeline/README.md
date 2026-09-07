@@ -27,15 +27,17 @@ La salida termina en el frame humano. El mapping humano -> robot y la IK se impl
 
 ```text
 pose_pipeline/
-|-- pipeline.py          # núcleo matemático
-|-- synthetic.py         # generación de entradas sintéticas
-|-- demo.py              # demostración didáctica V0
-|-- analysis/            # análisis de sensibilidad V1 y posteriores
+|-- pipeline.py                    # núcleo matemático
+|-- synthetic.py                   # generación de entradas sintéticas
+|-- demo.py                        # demostración didáctica V0
+|-- analysis/                      # análisis de sensibilidad V1 y posteriores
 |   |-- README.md
-|   `-- angular_sensitivity.py
-`-- tests/               # pruebas automáticas de todo el módulo
+|   |-- angular_sensitivity.py
+|   `-- calibration_sensitivity.py
+`-- tests/                         # pruebas automáticas de todo el módulo
     |-- test_pipeline.py
-    `-- test_angular_sensitivity.py
+    |-- test_angular_sensitivity.py
+    `-- test_calibration_sensitivity.py
 ```
 
 El código de análisis no se mezcla con el pipeline que después consumirá el robot.
@@ -54,7 +56,7 @@ No se obtiene posición mediante doble integración de aceleración.
 
 ## Calibración en esta versión
 
-La versión V0 **aplica calibraciones conocidas**. Esto permite validar primero la geometría sin mezclar errores del algoritmo de calibración con errores de reconstrucción.
+La versión V0 aplica calibraciones conocidas. Esto permite validar primero la geometría sin mezclar errores del algoritmo de calibración con errores de reconstrucción.
 
 Para cada segmento se aplica:
 
@@ -66,50 +68,61 @@ La estimación física de `q_S_B` mediante calibración funcional + estática qu
 
 ## Demo explicativa V0
 
-Además de las pruebas automáticas existe `demo.py`, pensada para entender la lógica sin tener que leer primero todo el código.
+`demo.py` está pensada para entender la lógica sin tener que leer primero todo el código.
 
-La demo imprime en cada ejemplo tres secciones:
-
-```text
-TENEMOS     -> datos de entrada
-CALCULAMOS  -> operación geométrica que se realiza
-OBTENEMOS   -> posición/orientación calculada
-```
-
-Ejecutar desde la raíz del repositorio:
+Ejecutar:
 
 ```bash
 python wearable/sensors/pose_pipeline/demo.py
 ```
 
-También se puede abrir `demo.py` en Codespaces y usar el botón **Run**.
+La demo mantiene el formato:
 
-La demo incluye:
-
-1. brazo y antebrazo totalmente extendidos: `0.30 + 0.25 = 0.55 m`;
-2. codo a 90 grados: muñeca en `(0.30, 0.00, 0.25) m`;
-3. giro de 30 grados sólo en la mano: cambia la orientación pero no la posición de la muñeca.
-
-La demo es didáctica. No sustituye las pruebas automáticas.
+```text
+TENEMOS
+CALCULAMOS
+OBTENEMOS
+```
 
 ## Análisis de sensibilidad V1
 
 Los análisis que perturban deliberadamente las entradas se guardan en `analysis/`.
 
-El primer análisis estudia cuánto error de posición aparece cuando introducimos errores angulares sintéticos en las orientaciones:
+### Error angular general
 
 ```bash
 python wearable/sensors/pose_pipeline/analysis/angular_sensitivity.py
 ```
 
-Prueba por separado:
+Estudia cuánto error de posición/orientación aparece cuando el pipeline recibe orientaciones con errores angulares sintéticos.
 
-- error en brazo;
-- error en antebrazo;
-- el mismo error en ambos;
-- error únicamente en mano.
+### Error residual de calibración
 
-Los ángulos utilizados son escenarios sintéticos de estudio y **no representan la precisión de una IMU real ni un requisito del proyecto**.
+```bash
+python wearable/sensors/pose_pipeline/analysis/calibration_sensitivity.py
+```
+
+Estudia por separado:
+
+```text
+offset físico de montaje
+-
+offset estimado por calibración
+=
+error residual de calibración
+```
+
+Incluye el ejemplo:
+
+```text
+antebrazo real = 45°
+IMU con 10° de offset físico -> lectura equivalente = 55°
+calibración estima 8°
+orientación reconstruida = 47°
+error residual = 2°
+```
+
+Los valores utilizados son escenarios sintéticos y **no representan la precisión de una IMU real ni un requisito del proyecto**.
 
 ## Pruebas automáticas
 
@@ -121,19 +134,7 @@ Ejecutar desde la raíz del repositorio:
 python -m unittest discover -s wearable/sensors/pose_pipeline/tests -v
 ```
 
-Casos V0 cubiertos:
-
-1. brazo y antebrazo rectos: 0.30 m + 0.25 m = 0.55 m;
-2. codo a 90 grados: muñeca en `(0.30, 0.00, 0.25)` m;
-3. rotar sólo la mano cambia orientación pero no posición de muñeca;
-4. una IMU montada con offset conocido se corrige mediante calibración;
-5. `q` y `-q` producen la misma rotación;
-6. se reporta el skew temporal de las tres muestras;
-7. longitudes no físicas se rechazan;
-8. quaternion de norma cero se rechaza;
-9. composición sensor + corrección recupera identidad.
-
-La V1 añade pruebas sobre la respuesta del modelo ante errores angulares sintéticos.
+Las pruebas cubren la geometría base, quaternions, calibración conocida, sincronización, sensibilidad angular y sensibilidad a errores residuales de calibración.
 
 ## Criterio de validación V0
 
