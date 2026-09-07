@@ -36,14 +36,18 @@ pose_pipeline/
 |   |-- calibration_sensitivity.py
 |   |-- noise_jitter.py
 |   |-- drift.py
-|   `-- desynchronization.py
+|   |-- desynchronization.py
+|   |-- multiaxis_sensitivity.py
+|   `-- segment_length_sensitivity.py
 `-- tests/                         # pruebas automáticas de todo el módulo
     |-- test_pipeline.py
     |-- test_angular_sensitivity.py
     |-- test_calibration_sensitivity.py
     |-- test_noise_jitter.py
     |-- test_drift.py
-    `-- test_desynchronization.py
+    |-- test_desynchronization.py
+    |-- test_multiaxis_sensitivity.py
+    `-- test_segment_length_sensitivity.py
 ```
 
 El código de análisis no se mezcla con el pipeline que después consumirá el robot.
@@ -108,15 +112,7 @@ Estudia cuánto error de posición/orientación aparece cuando el pipeline recib
 python wearable/sensors/pose_pipeline/analysis/calibration_sensitivity.py
 ```
 
-Estudia por separado:
-
-```text
-offset físico de montaje
--
-offset estimado por calibración
-=
-error residual de calibración
-```
+Estudia por separado el offset físico de montaje y el error residual que queda después de aplicar una calibración imperfecta.
 
 ### Ruido y jitter
 
@@ -132,7 +128,7 @@ Simula orientaciones que fluctúan alrededor del valor real y cuantifica cómo e
 python wearable/sensors/pose_pipeline/analysis/drift.py
 ```
 
-Simula una deriva angular progresiva mientras la pose física permanece fija. Permite cuantificar cómo el error acumulativo en brazo, antebrazo, mano o las tres IMUs se transforma en error de posición y orientación con el paso del tiempo.
+Simula una deriva angular progresiva mientras la pose física permanece fija.
 
 ### Desincronización dinámica
 
@@ -140,11 +136,25 @@ Simula una deriva angular progresiva mientras la pose física permanece fija. Pe
 python wearable/sensors/pose_pipeline/analysis/desynchronization.py
 ```
 
-Compara una pose ideal, donde las tres orientaciones corresponden al mismo instante, contra reconstrucciones donde los sensores pertenecen a instantes distintos durante movimiento.
+Compara una pose ideal contra reconstrucciones donde los sensores pertenecen a instantes distintos durante movimiento. También separa desincronización relativa de retardo común.
 
-También separa desincronización relativa de retardo común: tres sensores pueden estar perfectamente sincronizados entre sí y aun así representar una pose antigua por latencia.
+### Sensibilidad espacial / multieje
 
-Los tiempos, velocidades, niveles de ruido y tasas de drift utilizados son escenarios sintéticos y **no representan especificaciones de una IMU real ni requisitos adoptados por el proyecto**.
+```bash
+python wearable/sensors/pose_pipeline/analysis/multiaxis_sensitivity.py
+```
+
+Amplía la caracterización angular a una pose tridimensional no trivial e inyecta perturbaciones locales alrededor de X, Y, Z y un eje diagonal. Esto evita validar el pipeline únicamente con rotaciones planas alrededor de Z.
+
+### Sensibilidad a longitudes de segmentos
+
+```bash
+python wearable/sensors/pose_pipeline/analysis/segment_length_sensitivity.py
+```
+
+Estudia cuánto error de posición aparece cuando las orientaciones son correctas pero las longitudes introducidas para brazo o antebrazo difieren de las longitudes reales sintéticas.
+
+Los tiempos, velocidades, errores de longitud, niveles de ruido y tasas de drift utilizados son escenarios sintéticos y **no representan especificaciones de una IMU real ni requisitos adoptados por el proyecto**.
 
 ## Pruebas automáticas
 
@@ -156,7 +166,7 @@ Ejecutar desde la raíz del repositorio:
 python -m unittest discover -s wearable/sensors/pose_pipeline/tests -v
 ```
 
-Las pruebas cubren geometría base, quaternions, calibración conocida, timestamps, sensibilidad angular, errores residuales de calibración, ruido/jitter reproducible, drift sintético y desincronización dinámica.
+Las pruebas cubren geometría base, quaternions, calibración conocida, timestamps, sensibilidad angular, errores residuales de calibración, ruido/jitter, drift, desincronización dinámica, sensibilidad 3D por eje y errores en longitudes de segmento.
 
 GitHub Actions ejecuta automáticamente este mismo conjunto cuando cambia contenido dentro de `wearable/`.
 
@@ -168,18 +178,21 @@ Eso permitirá comparar el movimiento físico con el modelo digital y medir esta
 
 ## Cierre de la fase sintética
 
-La caracterización sintética del pipeline cubre ya los efectos principales que necesitamos entender antes de comprar hardware:
+La caracterización sintética queda acotada a riesgos con efecto directo sobre la reconstrucción:
 
 - error angular;
 - error residual de calibración;
 - ruido/jitter;
 - drift;
-- desincronización temporal durante movimiento;
-- diferencia conceptual entre skew interno y latencia común.
+- desincronización temporal y latencia común;
+- comportamiento espacial en múltiples ejes;
+- error en longitudes de brazo y antebrazo.
 
-No se propone seguir creando pruebas sintéticas indefinidamente. La repetibilidad real y los niveles físicos de ruido, drift y sincronización se medirán con el wearable construido.
+No se propone seguir creando perturbaciones sintéticas indefinidamente. La repetibilidad real y los niveles físicos de ruido, drift, sincronización y error de medición deberán obtenerse con el wearable construido.
 
-El siguiente incremento del proyecto es definir requisitos de adquisición de las 3 IMUs y utilizarlos para seleccionar IMU y microcontrolador con documentación oficial.
+A partir de aquí sólo se añadirá una prueba sintética nueva si una decisión de hardware o una observación experimental revela un riesgo concreto no cubierto.
+
+El siguiente incremento es derivar requisitos de adquisición de las 3 IMUs y utilizarlos para seleccionar IMU y microcontrolador con documentación oficial.
 
 ## Criterio de validación V0
 
