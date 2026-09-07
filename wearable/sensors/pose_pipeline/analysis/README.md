@@ -175,6 +175,40 @@ Ejecutar:
 python wearable/sensors/pose_pipeline/analysis/drift.py
 ```
 
+## 5. Desincronización dinámica
+
+Archivo:
+
+```text
+desynchronization.py
+```
+
+Estudia la diferencia entre dos problemas temporales distintos:
+
+1. **desincronización relativa:** brazo, antebrazo y mano corresponden a instantes diferentes durante movimiento;
+2. **retardo común:** las tres IMUs están sincronizadas entre sí, pero todas representan una pose anterior al instante de referencia.
+
+Para la desincronización relativa se prueban escenarios sintéticos de:
+
+```text
+0, 5, 10, 20 y 50 ms
+```
+
+con velocidades angulares sintéticas diferentes para brazo, antebrazo y mano. Los valores no son requisitos ya adoptados ni representan movimiento máximo del usuario.
+
+El análisis permite observar que:
+
+- un skew temporal con el operador quieto no altera por sí solo la pose;
+- durante movimiento, el mismo skew puede generar error de posición y orientación;
+- el efecto aumenta con la velocidad de movimiento;
+- un retardo común puede tener `sensor_time_skew_s = 0` y aun así producir error de seguimiento por latencia.
+
+Ejecutar:
+
+```bash
+python wearable/sensors/pose_pipeline/analysis/desynchronization.py
+```
+
 ## Formato de las demos
 
 Los análisis mantienen el formato:
@@ -210,6 +244,13 @@ La V1 todavía no valida hardware real. Busca caracterizar la sensibilidad matem
 - un error residual de calibración se propaga de la misma forma que un error angular equivalente en la orientación usada por el pipeline;
 - ruido angular variable puede convertirse en jitter de posición/orientación incluso cuando el operador está quieto;
 - durante movimiento puede cuantificarse cuánto se separa la trayectoria reconstruida de la ideal;
-- una deriva angular progresiva puede convertirse en error acumulativo de posición u orientación según el segmento afectado.
+- una deriva angular progresiva puede convertirse en error acumulativo de posición u orientación según el segmento afectado;
+- la desincronización relativa y la latencia común son fenómenos distintos y deberán producir requisitos distintos en la adquisición física.
 
-Los criterios físicos de error aceptable permanecen **PENDIENTES DE VALIDACIÓN** y deberán derivarse de la tarea experimental, la selección de sensores y mediciones reales.
+## Cierre de la caracterización sintética
+
+Con geometría, sensibilidad angular, calibración residual, ruido/jitter, drift y desincronización dinámica cubiertos, no se propone seguir agregando perturbaciones sintéticas indefinidamente.
+
+La repetibilidad relevante para D-006 deberá medirse con el wearable físico. El siguiente paso es derivar requisitos de adquisición para 3 IMUs y, con ellos, iniciar la selección justificada de IMU y microcontrolador.
+
+Los criterios físicos de error aceptable permanecen **PENDIENTES DE VALIDACIÓN** y deberán derivarse de la tarea experimental, los componentes seleccionados y las mediciones reales.
