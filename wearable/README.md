@@ -66,9 +66,37 @@ Actualmente permite:
 - simular ruido/jitter;
 - simular drift;
 - estudiar desincronización dinámica y distinguirla de latencia común;
+- comprobar sensibilidad con perturbaciones 3D/multieje;
+- estudiar error por longitudes incorrectas de brazo/antebrazo;
 - ejecutar pruebas automáticas mediante GitHub Actions.
 
-La caracterización sintética se considera suficiente para pasar al siguiente bloque. No se propone seguir agregando perturbaciones sintéticas sin una necesidad concreta.
+La batería actual contiene 62 pruebas automáticas. Esta evidencia valida software y matemática sintética, no hardware físico.
+
+La caracterización sintética se considera suficiente para pasar al siguiente bloque. No se propone seguir agregando perturbaciones sintéticas sin una necesidad concreta revelada por hardware o validación física.
+
+### REQUISITOS DE ADQUISICIÓN
+
+Se creó:
+
+```text
+requirements/acquisition_requirements.md
+```
+
+Este documento fija el contrato que debe cumplir la futura adquisición física y separa requisitos obligatorios, propuestas de arquitectura y parámetros numéricos todavía pendientes de validación.
+
+Entre otros puntos exige:
+
+- 3 canales identificables de orientación 3D;
+- quaternion y convención de frames documentados;
+- timestamps cercanos a la adquisición;
+- sincronización medible;
+- frecuencia y latencia medibles;
+- detección de datos inválidos/perdidos;
+- compatibilidad real de bus para 3 sensores;
+- calibración sensor-segmento independiente;
+- longitudes corporales configurables;
+- logging para D-006;
+- alimentación y montaje estables.
 
 ### PROPUESTA DE ARQUITECTURA FÍSICA
 
@@ -86,25 +114,15 @@ pipeline de pose + visualización
 
 La función inicial candidata del microcontrolador es adquirir, marcar temporalmente y transmitir los datos. El procesamiento de calibración, reconstrucción y visualización permanecería inicialmente en PC para facilitar depuración y validación.
 
+Como MVP se propone evaluar primero USB/serial cableado MCU→PC para reducir variables de comunicación durante la validación física. La interfaz definitiva aún no está adoptada.
+
 No se ha seleccionado todavía el microcontrolador comercial ni la IMU final.
 
 ## Siguiente incremento
 
-El siguiente paso es definir requisitos de adquisición física antes de comparar componentes.
+La siguiente etapa es comparar IMUs y microcontroladores contra `requirements/acquisition_requirements.md` utilizando datasheets y documentación oficial.
 
-Se deberán especificar, sin inventar aún valores de fabricante:
-
-- qué dato debe entregar cada IMU al pipeline;
-- frecuencia de actualización requerida;
-- resolución temporal/timestamps;
-- estrategia de sincronización de tres sensores;
-- interfaz de comunicación viable;
-- formato de quaternion/orientación y convenciones de ejes;
-- disponibilidad de datos crudos si se requiere sensor fusion propio;
-- requisitos de latencia y registro de datos;
-- necesidades eléctricas y físicas de integración en la manga.
-
-Con esos requisitos se iniciará la selección justificada de IMU y microcontrolador usando datasheets y documentación oficial.
+No se deben adoptar valores de frecuencia, skew, latencia o precisión sólo porque un componente los anuncie. Los límites físicos finales se cerrarán mediante literatura, tarea experimental y mediciones reales.
 
 La repetibilidad relevante para D-006 se medirá físicamente con el wearable construido, no mediante una simulación adicional que sólo repita datos generados por software.
 
@@ -128,6 +146,8 @@ Los límites numéricos aceptables todavía están **PENDIENTES DE VALIDACIÓN**
 ```text
 wearable/
 |-- README.md
+|-- requirements/
+|   `-- acquisition_requirements.md
 |-- sensors/
 |   `-- pose_pipeline/
 |       |-- pipeline.py
