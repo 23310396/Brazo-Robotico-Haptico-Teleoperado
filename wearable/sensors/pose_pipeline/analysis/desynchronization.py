@@ -119,18 +119,19 @@ def simulate_relative_skew(
 
     Para un skew total Δt:
       brazo      -> -Δt/2
-      antebrazo  -> +Δt/2
-      mano       -> 0
+      antebrazo  -> 0
+      mano       -> +Δt/2
 
-    Así, max(timestamp)-min(timestamp) = Δt.
+    Así, max(timestamp)-min(timestamp) = Δt y la prueba puede producir tanto
+    error de posición como de orientación cuando existe movimiento.
     """
     if skew_ms < 0.0:
         raise ValueError("skew_ms no puede ser negativo")
 
     half_s = (skew_ms / 1000.0) / 2.0
     upper_offset_s = -half_s
-    forearm_offset_s = half_s
-    hand_offset_s = 0.0
+    forearm_offset_s = 0.0
+    hand_offset_s = half_s
 
     ideal = _ideal_pose()
     reconstructed = _pose_at_offsets(
@@ -201,7 +202,7 @@ def _print_relative_skew() -> None:
     print(f"  Brazo en t_ref:       {ANGULO_BRAZO_REF_DEG:.1f}° a {VEL_BRAZO_DEG_S:.1f}°/s")
     print(f"  Antebrazo en t_ref:   {ANGULO_ANTEBRAZO_REF_DEG:.1f}° a {VEL_ANTEBRAZO_DEG_S:.1f}°/s")
     print(f"  Mano en t_ref:        {ANGULO_MANO_REF_DEG:.1f}° a {VEL_MANO_DEG_S:.1f}°/s")
-    print("  Para cada skew, brazo se toma antes, antebrazo después y mano en t_ref.")
+    print("  Para cada skew: brazo se toma antes, antebrazo en t_ref y mano después.")
     print("  Velocidades y skews son escenarios SINTÉTICOS de análisis.")
 
     print("\nCALCULAMOS:")
