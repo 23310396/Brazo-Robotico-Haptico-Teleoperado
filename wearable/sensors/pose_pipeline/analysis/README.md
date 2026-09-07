@@ -1,39 +1,12 @@
 # Análisis de sensibilidad V1
 
-Esta carpeta contiene análisis sintéticos del pipeline de pose. Su función es estudiar cómo errores controlados en las orientaciones, la calibración y la variación temporal afectan la posición y orientación reconstruidas.
+Esta carpeta contiene análisis sintéticos del pipeline de pose. Su función es estudiar cómo errores controlados en orientaciones, calibración, tiempo y parámetros geométricos afectan la posición y orientación reconstruidas.
 
 No contiene código necesario para operar el wearable real. El pipeline funcional permanece en el nivel superior de `pose_pipeline/`.
 
 ## 1. Sensibilidad angular
 
-Archivo:
-
-```text
-angular_sensitivity.py
-```
-
-El análisis parte de un caso sintético simple:
-
-- brazo: 0.30 m;
-- antebrazo: 0.25 m;
-- ambos inicialmente extendidos hacia +X;
-- calibración ideal;
-- errores angulares artificiales alrededor de Z.
-
-Se prueban:
-
-```text
-0.5°, 1°, 2°, 5°, 10°
-```
-
-Casos:
-
-1. error sólo en brazo;
-2. error sólo en antebrazo;
-3. mismo error en brazo y antebrazo;
-4. error sólo en mano.
-
-Ejecutar:
+`angular_sensitivity.py` estudia errores angulares sintéticos alrededor de Z para brazo, antebrazo, ambos y mano.
 
 ```bash
 python wearable/sensors/pose_pipeline/analysis/angular_sensitivity.py
@@ -41,46 +14,7 @@ python wearable/sensors/pose_pipeline/analysis/angular_sensitivity.py
 
 ## 2. Sensibilidad a error de calibración
 
-Archivo:
-
-```text
-calibration_sensitivity.py
-```
-
-Este análisis separa:
-
-```text
-orientación real del segmento
-+
-offset físico de montaje de la IMU
--
-offset estimado durante calibración
-=
-orientación reconstruida
-```
-
-La demo principal usa el ejemplo discutido durante el desarrollo:
-
-```text
-antebrazo real                 = 45°
-offset físico de montaje       = 10°
-lectura equivalente de la IMU  = 55°
-offset estimado                = 8°
-orientación reconstruida       = 47°
-error residual                 = 2°
-```
-
-Con el antebrazo sintético de 0.25 m, ese error residual de 2° produce aproximadamente 8.726 mm de error en la posición reconstruida de la muñeca.
-
-También se prueban errores residuales de:
-
-```text
-0°, 0.5°, 1°, 2°, 5°
-```
-
-por separado en brazo, antebrazo y mano.
-
-Ejecutar:
+`calibration_sensitivity.py` separa offset físico de montaje y error residual de calibración.
 
 ```bash
 python wearable/sensors/pose_pipeline/analysis/calibration_sensitivity.py
@@ -88,88 +22,15 @@ python wearable/sensors/pose_pipeline/analysis/calibration_sensitivity.py
 
 ## 3. Ruido y jitter
 
-Archivo:
-
-```text
-noise_jitter.py
-```
-
-Este análisis ya no aplica un error constante. Simula lecturas que fluctúan alrededor de la orientación real.
-
-Se estudian dos situaciones:
-
-1. **pose estática:** el brazo no se mueve, pero las tres orientaciones reciben ruido angular independiente;
-2. **movimiento:** el antebrazo recorre una trayectoria ideal y las orientaciones medidas se perturban alrededor de ella.
-
-Los niveles sintéticos utilizados son:
-
-```text
-sigma = 0°, 0.1°, 0.5°, 1°, 2°
-```
-
-El ruido se genera con distribución gaussiana de media cero y semilla fija. La semilla sólo sirve para que la simulación sea reproducible: Codespaces y GitHub Actions deben obtener exactamente los mismos resultados.
-
-Se reportan métricas como:
-
-- RMS del error de posición de muñeca;
-- desviación estándar del error de posición;
-- pico a pico del error de posición;
-- RMS del error de orientación de mano;
-- desviación estándar y pico a pico del error de orientación;
-- error máximo durante una trayectoria en movimiento.
-
-Ejecutar:
+`noise_jitter.py` simula ruido angular variable tanto con pose estática como durante movimiento y reporta métricas RMS, desviación estándar, pico a pico y máximos.
 
 ```bash
 python wearable/sensors/pose_pipeline/analysis/noise_jitter.py
 ```
 
-Los valores de sigma son **escenarios sintéticos de análisis**. No representan especificaciones de una IMU real ni límites aceptados por el proyecto.
-
 ## 4. Drift angular
 
-Archivo:
-
-```text
-drift.py
-```
-
-Este análisis estudia un error que no fluctúa alrededor del valor real, sino que se acumula progresivamente con el tiempo mientras la pose física permanece fija.
-
-Modelo sintético:
-
-```text
-drift acumulado = tasa de drift * tiempo
-```
-
-Se analiza por separado:
-
-1. drift sólo en brazo;
-2. drift sólo en antebrazo;
-3. drift sólo en mano;
-4. el mismo drift en las tres IMUs.
-
-Las tasas sintéticas usadas son:
-
-```text
-0, 0.01, 0.05, 0.10 y 0.25 °/s
-```
-
-durante un escenario de 60 s. Estos valores son únicamente parámetros de simulación: **no representan especificaciones de una IMU real ni criterios de aceptación del proyecto**.
-
-Se reportan:
-
-- drift angular acumulado al final;
-- RMS del error de posición;
-- error máximo de posición;
-- error final de posición;
-- RMS del error de orientación;
-- error máximo de orientación;
-- error final de orientación.
-
-La simulación no aplica filtro, magnetómetro, clutch ni recenter. Primero se caracteriza el problema sin mitigación.
-
-Ejecutar:
+`drift.py` estudia una deriva angular progresiva sin aplicar filtros, magnetómetro, clutch ni recenter.
 
 ```bash
 python wearable/sensors/pose_pipeline/analysis/drift.py
@@ -177,36 +38,52 @@ python wearable/sensors/pose_pipeline/analysis/drift.py
 
 ## 5. Desincronización dinámica
 
-Archivo:
+`desynchronization.py` distingue:
 
-```text
-desynchronization.py
-```
-
-Estudia la diferencia entre dos problemas temporales distintos:
-
-1. **desincronización relativa:** brazo, antebrazo y mano corresponden a instantes diferentes durante movimiento;
-2. **retardo común:** las tres IMUs están sincronizadas entre sí, pero todas representan una pose anterior al instante de referencia.
-
-Para la desincronización relativa se prueban escenarios sintéticos de:
-
-```text
-0, 5, 10, 20 y 50 ms
-```
-
-con velocidades angulares sintéticas diferentes para brazo, antebrazo y mano. Los valores no son requisitos ya adoptados ni representan movimiento máximo del usuario.
-
-El análisis permite observar que:
-
-- un skew temporal con el operador quieto no altera por sí solo la pose;
-- durante movimiento, el mismo skew puede generar error de posición y orientación;
-- el efecto aumenta con la velocidad de movimiento;
-- un retardo común puede tener `sensor_time_skew_s = 0` y aun así producir error de seguimiento por latencia.
-
-Ejecutar:
+1. desincronización relativa entre las tres IMUs durante movimiento;
+2. retardo común, donde las tres IMUs siguen sincronizadas entre sí pero representan una pose anterior.
 
 ```bash
 python wearable/sensors/pose_pipeline/analysis/desynchronization.py
+```
+
+## 6. Sensibilidad espacial / multieje
+
+`multiaxis_sensitivity.py` corrige una limitación de los primeros análisis: una IMU mide orientación 3D y no basta con comprobar perturbaciones alrededor de un único eje.
+
+Se parte de una pose tridimensional no trivial y se inyecta el mismo error alrededor de:
+
+```text
+X local
+Y local
+Z local
+eje diagonal (1,1,1)
+```
+
+Se analiza por separado brazo, antebrazo y mano.
+
+Una consecuencia geométrica importante del modelo es que un giro puramente alrededor del eje longitudinal local +X de brazo o antebrazo no desplaza el extremo de ese segmento; errores que inclinan dicho eje sí pueden desplazar codo/muñeca. En la IMU de mano, el error angular aparece como error de orientación de salida.
+
+```bash
+python wearable/sensors/pose_pipeline/analysis/multiaxis_sensitivity.py
+```
+
+## 7. Sensibilidad a longitudes de segmentos
+
+`segment_length_sensitivity.py` estudia un error distinto a los de la IMU: utilizar una longitud incorrecta para brazo o antebrazo.
+
+Las orientaciones se mantienen ideales y sólo se modifica la longitud introducida al modelo. Se reporta error de posición de codo y muñeca.
+
+Escenarios sintéticos:
+
+```text
+-20, -10, -5, 0, +5, +10 y +20 mm
+```
+
+Estos valores no representan todavía incertidumbre real de medición del operador.
+
+```bash
+python wearable/sensors/pose_pipeline/analysis/segment_length_sensitivity.py
 ```
 
 ## Formato de las demos
@@ -237,20 +114,33 @@ python -m unittest discover -s wearable/sensors/pose_pipeline/tests -v
 
 La V1 todavía no valida hardware real. Busca caracterizar la sensibilidad matemática del modelo y comprobar que:
 
-- un error angular en brazo o antebrazo puede transformarse en error cartesiano de muñeca;
-- un error exclusivamente en la IMU de mano afecta la orientación y no la posición de muñeca con la arquitectura actual;
-- una IMU físicamente montada con offset puede reconstruir correctamente el segmento si la calibración compensa ese offset;
-- el problema relevante es el **error residual de calibración**, no simplemente que la IMU esté montada con cierto ángulo;
-- un error residual de calibración se propaga de la misma forma que un error angular equivalente en la orientación usada por el pipeline;
-- ruido angular variable puede convertirse en jitter de posición/orientación incluso cuando el operador está quieto;
-- durante movimiento puede cuantificarse cuánto se separa la trayectoria reconstruida de la ideal;
-- una deriva angular progresiva puede convertirse en error acumulativo de posición u orientación según el segmento afectado;
-- la desincronización relativa y la latencia común son fenómenos distintos y deberán producir requisitos distintos en la adquisición física.
+- errores angulares en brazo/antebrazo pueden convertirse en error cartesiano de muñeca;
+- errores de mano afectan directamente la orientación de salida;
+- la calibración correcta puede compensar un offset físico conocido;
+- el error residual de calibración se propaga a la reconstrucción;
+- ruido angular puede producir jitter aun con el operador quieto;
+- drift puede producir error acumulativo;
+- desincronización relativa y latencia común son fenómenos distintos;
+- el comportamiento se mantiene coherente en orientaciones tridimensionales y perturbaciones en varios ejes;
+- una longitud de segmento mal medida genera error cartesiano aunque las orientaciones sean perfectas.
 
-## Cierre de la caracterización sintética
+## Criterio de cierre de la caracterización sintética
 
-Con geometría, sensibilidad angular, calibración residual, ruido/jitter, drift y desincronización dinámica cubiertos, no se propone seguir agregando perturbaciones sintéticas indefinidamente.
+Con estos bloques se consideran cubiertos los riesgos matemáticos principales conocidos antes de seleccionar hardware:
 
-La repetibilidad relevante para D-006 deberá medirse con el wearable físico. El siguiente paso es derivar requisitos de adquisición para 3 IMUs y, con ellos, iniciar la selección justificada de IMU y microcontrolador.
+1. geometría base;
+2. error angular;
+3. calibración residual;
+4. ruido/jitter;
+5. drift;
+6. desincronización/latencia;
+7. orientación 3D multieje;
+8. error de longitudes de segmento.
 
-Los criterios físicos de error aceptable permanecen **PENDIENTES DE VALIDACIÓN** y deberán derivarse de la tarea experimental, los componentes seleccionados y las mediciones reales.
+No se agregarán pruebas sintéticas únicamente para aumentar cobertura. Una prueba adicional requerirá un riesgo concreto revelado por la selección de hardware, la adquisición real o la validación física.
+
+La repetibilidad relevante para D-006 debe medirse con el wearable físico.
+
+El siguiente paso es derivar requisitos de adquisición para 3 IMUs y, con ellos, iniciar la selección justificada de IMU y microcontrolador.
+
+Los criterios físicos de error aceptable permanecen **PENDIENTES DE VALIDACIÓN**.
