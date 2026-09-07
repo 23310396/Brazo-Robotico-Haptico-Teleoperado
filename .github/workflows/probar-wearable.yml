@@ -1,0 +1,29 @@
+name: Probar wearable
+
+on:
+  push:
+    paths:
+      - "wearable/**"
+      - ".github/workflows/probar-wearable.yml"
+  pull_request:
+    paths:
+      - "wearable/**"
+      - ".github/workflows/probar-wearable.yml"
+  workflow_dispatch:
+
+jobs:
+  pruebas-pose:
+    name: Pruebas del pipeline de pose
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+
+      - name: Configurar Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Ejecutar pruebas del wearable
+        run: python -m unittest discover -s wearable/sensors/pose_pipeline/tests -v
