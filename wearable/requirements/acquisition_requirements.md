@@ -4,12 +4,13 @@ Documento de transición entre la validación sintética del pipeline y la selec
 
 Su objetivo es responder: **¿qué debe entregar físicamente el sistema de 3 IMUs para que el pipeline de pose pueda operar y D-006 pueda validarse con hardware real?**
 
-No selecciona todavía una IMU ni un microcontrolador comercial.
+Este documento originó la comparación de hardware. La selección comercial quedó posteriormente adoptada en **D-007**: 3 × ISM330BX + XIAO ESP32-S3 Plus + SPI compartido. Los parámetros numéricos de desempeño continúan pendientes de validación.
 
 ## Trazabilidad
 
 - **D-002 — DECISIÓN:** captura del operador con 3 IMUs: brazo, antebrazo y mano.
 - **D-006 — DECISIÓN:** validar el wearable como subsistema independiente antes de integrar el robot.
+- **D-007 — DECISIÓN:** 3 × ISM330BX + XIAO ESP32-S3 Plus + SPI compartido; USB para D-006 y capacidad inalámbrica final.
 - **IMPLEMENTADO:** el pipeline Python recibe tres orientaciones, timestamps, identificadores y estado de validez, aplica calibración conocida y reconstruye codo, muñeca y orientación de mano.
 - **IMPLEMENTADO:** la caracterización sintética cubre error angular, calibración residual, ruido/jitter, drift, desincronización dinámica, rotaciones 3D y error en longitudes de segmentos.
 
@@ -199,9 +200,9 @@ La comunicación hacia la PC deberá preservar como mínimo:
 sensor_id + timestamp + quaternion + valid
 ```
 
-La interfaz física definitiva permanece **PENDIENTE DE DECISIÓN**.
+**DECISIÓN D-007:** durante D-006 se utilizará enlace cableado por USB hacia la PC para reducir variables de latencia, pérdida de paquetes, alimentación y depuración.
 
-**PROPUESTA MVP:** comenzar con enlace cableado por USB/serial para reducir variables de latencia, pérdida de paquetes y alimentación durante la primera validación física. Una solución inalámbrica sólo se adoptará si aporta valor suficiente al experimento.
+**OBJETIVO FINAL ADOPTADO:** la versión final del wearable deberá poder operar sin cable de datos hacia la PC. El XIAO ESP32-S3 Plus conserva Wi-Fi y BLE como alternativas; la selección Wi-Fi vs BLE permanece **PENDIENTE DE DECISIÓN Y VALIDACIÓN**.
 
 ### R-WEA-ACQ-015 — Registro de datos para validación
 
@@ -284,3 +285,22 @@ Si una alternativa no permite verificar o medir variables necesarias para D-006,
 **CAMBIO DE CHAT previsto → 01 — Investigación y decisiones**
 
 Usar este documento como entrada para comparar IMUs y microcontroladores mediante datasheets/documentación oficial. No adoptar componentes hasta documentar alternativas, evidencia, limitaciones e impacto en firmware/mecánica/validación.
+
+
+---
+
+## Selección de hardware resultante — D-007
+
+**DECISIÓN ADOPTADA — 20 de septiembre de 2026**
+
+- IMU: **3 × STMicroelectronics ISM330BX**.
+- MCU central: **Seeed Studio XIAO ESP32-S3 Plus**.
+- Bus entre IMUs y MCU: **SPI compartido con CS independiente por sensor**.
+- Enlace de validación D-006: **USB cableado**.
+- Objetivo final: **operación inalámbrica sin cable de datos hacia la PC**.
+- Protocolo inalámbrico: **PENDIENTE — Wi-Fi vs BLE**.
+- Carrier/breakout físico definitivo del ISM330BX: **PENDIENTE**.
+- Pinout definitivo e interrupciones: **PENDIENTE**.
+- Alimentación/batería: **PENDIENTE DE CÁLCULO Y SELECCIÓN**.
+
+La adopción de hardware NO define ni modifica los límites numéricos todavía pendientes de error, frecuencia, skew, latencia, drift, jitter o repetibilidad.
