@@ -14,6 +14,7 @@ Cada `D-XXX` conserva su propio archivo para mantener historial, alternativas, j
 | [D-004](./D-004-feedback-vibrotactil-mvp.md) | Retroalimentación vibrotáctil para MVP | DECISIÓN ADOPTADA |
 | [D-005](./D-005-integracion-modular-humanoide.md) | Integración modular 6R con plataforma humanoide | DECISIÓN ADOPTADA |
 | [D-006](./D-006-validar-wearable-antes-de-integrar-robot.md) | Validar wearable físico antes de integrar el robot | DECISIÓN ADOPTADA |
+| [D-007](./D-007-seleccion-hardware-adquisicion-wearable.md) | Selección de IMU, MCU y bus del wearable | DECISIÓN ADOPTADA |
 
 ## Regla de uso
 
