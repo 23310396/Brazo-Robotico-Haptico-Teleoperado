@@ -79,8 +79,8 @@ GitHub Actions, workflow **Probar wearable**, sobre el commit:
 
 registró:
 
-- 31 pruebas ejecutadas;
-- 31 pruebas exitosas;
+- 62 pruebas automáticas ejecutadas en la caracterización sintética vigente;
+- 62 pruebas exitosas;
 - resultado final `OK`;
 - workflow concluido en `success`.
 
@@ -120,7 +120,7 @@ calibración + reconstrucción + visualización
 
 La función candidata del microcontrolador es adquirir, marcar temporalmente y transmitir los datos, manteniendo inicialmente el procesamiento principal en PC para facilitar depuración y validación.
 
-No se adopta todavía un modelo específico de IMU ni de microcontrolador.
+La selección comercial de IMU, MCU y bus quedó resuelta posteriormente mediante **D-007**. El carrier físico definitivo de las IMUs, pinout, alimentación y protocolo inalámbrico continúan pendientes.
 
 ## Relación con decisiones previas
 
