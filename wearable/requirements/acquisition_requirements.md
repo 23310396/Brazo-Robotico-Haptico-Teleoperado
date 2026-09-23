@@ -299,8 +299,11 @@ Usar este documento como entrada para comparar IMUs y microcontroladores mediant
 - Enlace de validación D-006: **USB cableado**.
 - Objetivo final: **operación inalámbrica sin cable de datos hacia la PC**.
 - Protocolo inalámbrico: **PENDIENTE — Wi-Fi vs BLE**.
-- Carrier/breakout físico definitivo del ISM330BX: **PENDIENTE**.
-- Pinout definitivo e interrupciones: **PENDIENTE**.
-- Alimentación/batería: **PENDIENTE DE CÁLCULO Y SELECCIÓN**.
+- Carrier para primera validación D-006: **3 × STEVAL-MKI245KA — DECIDIDO**.
+- Carrier definitivo de la manga: **PENDIENTE**.
+- Arquitectura SPI: **4 hilos compartidos + CS individual + INT1 individual — DECIDIDO**.
+- Mapeo exacto de GPIO y velocidad SPI: **PENDIENTE DE IMPLEMENTACIÓN/VALIDACIÓN**.
+- Alimentación D-006: **USB al XIAO + 3.3 V del XIAO a las IMUs — DECIDIDO**.
+- Batería/regulación final: **PENDIENTE DE CÁLCULO Y SELECCIÓN**.
 
 La adopción de hardware NO define ni modifica los límites numéricos todavía pendientes de error, frecuencia, skew, latencia, drift, jitter o repetibilidad.
