@@ -171,3 +171,8 @@ D-007 deberá revisarse si las primeras pruebas físicas muestran que:
 - el XIAO ESP32-S3 Plus no ofrece recursos o GPIO suficientes;
 - el SPI compartido no permite cumplir los requisitos temporales;
 - la arquitectura inalámbrica final exige un cambio material de MCU.
+
+
+## BOM y costo de referencia
+
+Los costos vigentes y rubros pendientes se mantienen en `hardware/BOM.md`. El precio de compra no sustituye los criterios técnicos de esta decisión y deberá actualizarse al realizar la compra.
