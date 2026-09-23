@@ -47,8 +47,17 @@ Este archivo registra las fuentes primarias aceptadas para D-007.
 - **Aplicación:** D-007; periféricos; comunicaciones; firmware.
 - **NotebookLM:** REGISTRO/ALMACENAMIENTO OBLIGATORIO — sección Wearable/Sensado → Hardware/MCU.
 
-## Fuente candidata no aceptada todavía
+## P-SEN-013 — STEVAL-MKI245KA
 
-**STEVAL-MKI245KA — STMicroelectronics**
-
-Permanece como **FUENTE/COMPONENTE CANDIDATO** para carrier de prototipo del ISM330BX. No recibe ID definitivo hasta decidir si se adopta como hardware del proyecto.
+- **ID:** P-SEN-013
+- **Autor/organización:** STMicroelectronics
+- **Título:** STEVAL-MKI245KA — ISM330BX evaluation kit / official product and data brief
+- **Tipo:** Documentación oficial de kit de evaluación
+- **URL:** https://www.st.com/en/evaluation-tools/steval-mki245ka.html
+- **Área principal:** Wearable / Sensado
+- **Áreas secundarias:** IMU; carrier; prototipado; adquisición; montaje
+- **Estado:** ACEPTADA — 22 de septiembre de 2026
+- **Motivo de inclusión:** carrier oficial adoptado para la primera validación física D-006; expone el pinout del ISM330BX, incorpora desacoplos y facilita montaje temporal reproducible.
+- **Aplicación:** D-007; prototipo físico D-006; integración de 3 × ISM330BX.
+- **Limitación:** no se adopta como carrier definitivo de la manga; su costo/tamaño pueden justificar una carrier compacta posterior.
+- **NotebookLM:** REGISTRO/ALMACENAMIENTO OBLIGATORIO — sección Wearable/Sensado → Hardware/IMU / Carrier.
