@@ -63,7 +63,7 @@ ISM330BX antebrazo ─ CS2 ├─ SPI compartido ─ XIAO ESP32-S3 Plus
 ISM330BX mano ────── CS3 ┘
 ```
 
-Las líneas de interrupción independientes permanecen PENDIENTES DE CIERRE DE PINOUT. Se utilizarán sólo si aportan valor medible a sincronización/adquisición.
+**Extensión adoptada — 22 de septiembre de 2026:** utilizar SPI de **4 hilos**, con **CS independiente** e **INT1 independiente por cada IMU** durante D-006. Las tres IMUs compartirán SCK/MOSI/MISO. El número exacto de GPIO del XIAO asignado a cada señal permanece PENDIENTE DE CIERRE DE PINOUT.
 
 ### MCU → PC durante D-006
 Adoptar **USB cableado** para la primera validación física.
@@ -102,9 +102,9 @@ El uso del SFLP NO sustituye la validación física ni convierte sus especificac
 
 ## Fuente física de las IMUs
 
-Se adopta el **chip ISM330BX**, pero todavía NO se adopta el carrier/breakout final de cada sensor.
+Se adopta el **chip ISM330BX**.
 
-Para prototipo inicial se evaluará el kit oficial **STEVAL-MKI245KA** frente a una carrier compacta apropiada.
+**Extensión adoptada — 22 de septiembre de 2026:** para la primera validación física de D-006 se utilizarán **3 × STEVAL-MKI245KA**, uno por segmento. Esta selección aplica al prototipo/validación; el carrier final de la manga permanece PENDIENTE y podrá sustituirse por una solución más compacta después de validar el sensor.
 
 La selección del carrier deberá considerar:
 - tamaño y masa;
@@ -117,32 +117,28 @@ La selección del carrier deberá considerar:
 
 ## Alimentación
 
-La arquitectura eléctrica definitiva permanece PENDIENTE.
+**Extensión adoptada — 22 de septiembre de 2026:** durante D-006 el XIAO ESP32-S3 Plus se alimentará desde USB y las tres IMUs se alimentarán a **3.3 V desde el XIAO**, dentro de los rangos documentados del ISM330BX.
 
-La siguiente etapa deberá calcular:
-- consumo máximo del XIAO ESP32-S3 Plus;
-- consumo de 3 × ISM330BX;
-- margen;
-- alimentación por USB durante D-006;
-- batería/regulación para modo inalámbrico final.
-
-No se adopta batería ni regulador sin este cálculo.
+La batería y la regulación para el modo inalámbrico final permanecen PENDIENTES. No se adopta capacidad de batería ni regulador sin cerrar el protocolo inalámbrico, duración objetivo de sesión y consumo real del sistema completo.
 
 ## Pinout
 
-El pinout definitivo permanece PENDIENTE.
+El **mapeo exacto de GPIO** permanece PENDIENTE.
 
-Presupuesto conceptual:
-- SCK, MOSI, MISO compartidos: 3 GPIO;
+Arquitectura de señales adoptada:
+- SCK, MOSI y MISO compartidos: 3 GPIO;
 - CS por IMU: 3 GPIO;
-- INT por IMU: hasta 3 GPIO adicionales;
-- además deberá reservarse margen para clutch/recenter, gripper y háptica.
+- INT1 por IMU: 3 GPIO;
+- reservar margen para clutch/recenter, gripper y háptica.
+
+La velocidad de SPI permanecerá configurable y se determinará experimentalmente para evitar asumir que la frecuencia máxima del sensor es apropiada para el arnés wearable.
 
 ## Fuentes aceptadas asociadas
 
 - **P-SEN-010 — STMicroelectronics, ISM330BX product documentation/datasheet.**
 - **P-SEN-011 — Seeed Studio, XIAO ESP32-S3 Plus official documentation/datasheet.**
 - **P-SEN-012 — Espressif Systems, ESP32-S3 Datasheet.**
+- **P-SEN-013 — STMicroelectronics, STEVAL-MKI245KA product/data brief and official design resources.**
 
 Estas fuentes deben guardarse en NotebookLM de acuerdo con la regla de fuentes del proyecto.
 
@@ -154,9 +150,10 @@ Estas fuentes deben guardarse en NotebookLM de acuerdo con la regla de fuentes d
 
 ## Pendientes de validación
 
-- carrier/breakout físico final del ISM330BX;
-- pinout definitivo;
-- alimentación y batería;
+- carrier/breakout físico de la versión final (D-006 usa STEVAL-MKI245KA);
+- mapeo exacto de GPIO;
+- velocidad SPI validada sobre el arnés;
+- batería/regulación para modo inalámbrico final;
 - frecuencia efectiva;
 - skew entre sensores;
 - latencia adquisición→PC;
