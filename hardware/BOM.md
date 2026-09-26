@@ -10,8 +10,8 @@
 
 | Componente | Cant. | Estado | Precio unitario ref. | Subtotal USD | Subtotal MXN aprox. |
 |---|---:|---|---:|---:|---:|
-| ST STEVAL-MKI245KA (ISM330BX) | 3 | ADOPTADO para primera validación D-006 | US$33.10 (DigiKey) | US$99.30 | $1,720.33 |
-| Seeed Studio XIAO ESP32-S3 Plus | 1 | ADOPTADO | US$7.99 (Seeed Studio) | US$7.99 | $138.41 |
+| ST STEVAL-MKI245KA (ISM330BX) | 3 | ADOPTADO — COMPRAR YA para D-006 | US$33.10 (DigiKey) | US$99.30 | $1,720.33 |
+| Seeed Studio XIAO ESP32-S3 Plus | 1 | ADOPTADO — COMPRAR YA para D-006 | US$7.99 (Seeed Studio) | US$7.99 | $138.41 |
 | **Subtotal hardware de adquisición seleccionado** |  |  |  | **US$107.29** | **$1,858.64** |
 
 **Tipo de cambio de referencia:** 1 USD = 17.3235 MXN (consulta 22/23-sep-2026).  
@@ -51,3 +51,8 @@ El Contexto Maestro mantiene un presupuesto global preliminar como referencia de
 - P-SEN-011 — XIAO ESP32-S3 Plus.
 - P-SEN-012 — ESP32-S3.
 - P-SEN-013 — STEVAL-MKI245KA.
+
+
+## Secuencia de compra D-006
+
+Ver `hardware/wearable/purchase_plan_d006.md`. El hardware principal se compra ya; conectores/cableado definitivos se cierran después de validar 3 IMUs en banco.
