@@ -1,6 +1,6 @@
-# Pinout de adquisición D-006 — PROPUESTA PENDIENTE DE APROBACIÓN
+# Pinout de adquisición D-006
 
-**Estado:** PROPUESTA TÉCNICA — no modifica D-007 hasta aprobación del equipo.  
+**Estado:** DECISIÓN DE IMPLEMENTACIÓN — aprobada por el equipo el 25 de septiembre de 2026.  
 **Área:** Wearable / Sensado / Hardware de adquisición.  
 **Trazabilidad:** D-002, D-006, D-007; P-SEN-010, P-SEN-011, P-SEN-012, P-SEN-013.
 
@@ -8,7 +8,7 @@
 
 Cerrar el mapeo físico entre el Seeed Studio XIAO ESP32-S3 Plus y las 3 × STEVAL-MKI245KA usadas para la primera validación D-006.
 
-La arquitectura ya adoptada permanece:
+La arquitectura adoptada permanece:
 
 ```text
 3 × ISM330BX
@@ -51,9 +51,9 @@ La documentación oficial de Espressif identifica:
 - GPIO43 y GPIO44 como interfaz UART0;
 - GPIO19 y GPIO20 como USB Serial/JTAG.
 
-Por robustez de arranque se propone no usar D2/GPIO3 en el arnés de las IMUs.  
-Se propone conservar D6/GPIO43 (TX0) libre para depuración de emergencia.  
-D7/GPIO44 se utilizaría como entrada de interrupción; esto sacrifica RX0, pero no interfiere con el USB adoptado para D-006.
+Por robustez de arranque se adopta no usar D2/GPIO3 en el arnés de las IMUs.  
+Se conserva D6/GPIO43 (TX0) libre para depuración de emergencia.  
+D7/GPIO44 se utilizará como entrada de interrupción; esto sacrifica RX0 para D-006, pero no interfiere con el USB adoptado.
 
 ### P-SEN-010 — ISM330BX
 
@@ -71,7 +71,7 @@ El datasheet caracteriza SPI hasta 10 MHz. Ese valor es un máximo del dispositi
 
 El carrier oficial expone el pinout del ISM330BX y contiene el desacoplo requerido para VDD y VDDIO. Para D-006 se conectarán las señales por nombre de red del carrier: VDD, VDDIO, GND, SCL, SDA, SDO/SA0, CS e INT1.
 
-## Pinout propuesto del XIAO
+## Pinout adoptado del XIAO
 
 | Función | XIAO | GPIO ESP32-S3 | Dirección MCU | Destino |
 |---|---|---:|---|---|
@@ -89,7 +89,7 @@ El carrier oficial expone el pinout del ISM330BX y contiene el desacoplo requeri
 
 ## Pines deliberadamente reservados
 
-| XIAO | GPIO | Estado propuesto | Razón |
+| XIAO | GPIO | Estado | Razón |
 |---|---:|---|---|
 | D2 | GPIO3 | NO USAR en D-006 | pin de strapping del ESP32-S3 |
 | D6 | GPIO43 | RESERVAR | TX0 / depuración de emergencia |
@@ -124,8 +124,6 @@ GND ─ GND común
 
 ## Reglas de firmware derivadas
 
-**PROPUESTA de implementación:**
-
 1. configurar los tres CS como salida y mantenerlos en nivel inactivo antes de iniciar transacciones;
 2. seleccionar únicamente una IMU a la vez;
 3. configurar INT1 de cada IMU en un GPIO independiente;
@@ -134,7 +132,7 @@ GND ─ GND común
 6. no adoptar todavía 10 MHz como velocidad operativa;
 7. validar físicamente la integridad del bus con el arnés real antes de incrementar la velocidad.
 
-## Pendientes después de aprobar este pinout
+## Pendientes posteriores al cierre del pinout
 
 1. definir ubicación física del XIAO;
 2. definir topología, longitud aproximada y conectores del arnés;
@@ -142,7 +140,3 @@ GND ─ GND común
 4. implementar firmware mínimo de bring-up con **1 IMU**;
 5. validar identificación/WHO_AM_I y lectura por SPI;
 6. extender posteriormente a 3 IMUs + INT1 + FIFO/timestamps.
-
-## Criterio de adopción
-
-Este documento pasará de **PROPUESTA** a **DECISIÓN DE IMPLEMENTACIÓN** cuando el equipo apruebe el mapeo y no se identifique un conflicto de pines con funciones necesarias del MVP D-006.
