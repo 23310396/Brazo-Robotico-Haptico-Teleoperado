@@ -63,7 +63,7 @@ ISM330BX antebrazo ─ CS2 ├─ SPI compartido ─ XIAO ESP32-S3 Plus
 ISM330BX mano ────── CS3 ┘
 ```
 
-**Extensión adoptada — 22 de septiembre de 2026:** utilizar SPI de **4 hilos**, con **CS independiente** e **INT1 independiente por cada IMU** durante D-006. Las tres IMUs compartirán SCK/MOSI/MISO. El número exacto de GPIO del XIAO asignado a cada señal permanece PENDIENTE DE CIERRE DE PINOUT.
+**Extensión adoptada — 22 de septiembre de 2026:** utilizar SPI de **4 hilos**, con **CS independiente** e **INT1 independiente por cada IMU** durante D-006. Las tres IMUs compartirán SCK/MOSI/MISO.\n\n**Pinout adoptado — 25 de septiembre de 2026:** SCK=D8/GPIO7, MISO=D9/GPIO8, MOSI=D10/GPIO9; CS brazo=D0/GPIO1, CS antebrazo=D1/GPIO2, CS mano=D3/GPIO4; INT1 brazo=D4/GPIO5, INT1 antebrazo=D5/GPIO6 e INT1 mano=D7/GPIO44. D2/GPIO3 queda fuera del arnés y D6/GPIO43 se reserva para depuración TX0.
 
 ### MCU → PC durante D-006
 Adoptar **USB cableado** para la primera validación física.
