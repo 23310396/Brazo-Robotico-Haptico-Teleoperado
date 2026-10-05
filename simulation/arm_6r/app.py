@@ -52,6 +52,19 @@ def ensure_state() -> None:
         st.session_state.target_rpy_deg = np.rad2deg(
             rotation_to_rpy_zyx(fk0["R_tcp"])
         )
+
+    target_defaults = {
+        "target_x": float(st.session_state.target_position[0]),
+        "target_y": float(st.session_state.target_position[1]),
+        "target_z": float(st.session_state.target_position[2]),
+        "target_roll": float(st.session_state.target_rpy_deg[0]),
+        "target_pitch": float(st.session_state.target_rpy_deg[1]),
+        "target_yaw": float(st.session_state.target_rpy_deg[2]),
+    }
+    for key, value in target_defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = value
+
     if "ik_solutions" not in st.session_state:
         st.session_state.ik_solutions = []
     if "ik_status" not in st.session_state:
