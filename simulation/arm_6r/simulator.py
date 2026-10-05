@@ -11,11 +11,35 @@ from __future__ import annotations
 
 import argparse
 import math
+import sys
+
+import matplotlib
+import numpy as np
+
+
+# El smoke test usa un backend sin ventana a propósito. Para la interfaz real
+# comprobamos Tk antes de importar pyplot, de modo que un backend no interactivo
+# no pueda hacer que el programa termine "sin abrir nada".
+_SMOKE_REQUESTED = "--smoke-test" in sys.argv
+_GUI_BACKEND_ERROR: Exception | None = None
+
+if _SMOKE_REQUESTED:
+    matplotlib.use("Agg", force=True)
+else:
+    try:
+        import tkinter as tk
+
+        _probe = tk.Tk()
+        _probe.withdraw()
+        _probe.update_idletasks()
+        _probe.destroy()
+        matplotlib.use("TkAgg", force=True)
+    except Exception as exc:  # se reporta de forma clara en main()
+        _GUI_BACKEND_ERROR = exc
 
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from matplotlib.widgets import Button, CheckButtons, RadioButtons, Slider
-import numpy as np
 
 from robot.kinematics.forward_kinematics import (
     forward_kinematics,
@@ -406,7 +430,8 @@ class Arm6RSimulator:
 
     def show(self) -> None:
         self._reset_view()
-        plt.show()
+        # block=True mantiene vivo el proceso hasta cerrar la ventana.
+        plt.show(block=True)
 
 
 def smoke_test() -> None:
@@ -443,12 +468,35 @@ def main() -> None:
         action="store_true",
         help="Valida cálculo y render sin abrir la interfaz.",
     )
+    parser.add_argument(
+        "--diagnose-gui",
+        action="store_true",
+        help="Muestra el backend gráfico y el estado de Tk sin abrir el simulador.",
+    )
     args = parser.parse_args()
+
+    if args.diagnose_gui:
+        print(f"Python: {sys.executable}")
+        print(f"Matplotlib: {matplotlib.__version__}")
+        print(f"Backend: {matplotlib.get_backend()}")
+        if _GUI_BACKEND_ERROR is None:
+            print("Tk GUI: OK")
+        else:
+            print(f"Tk GUI: ERROR -> {_GUI_BACKEND_ERROR}")
+        return
 
     if args.smoke_test:
         smoke_test()
         return
 
+    if _GUI_BACKEND_ERROR is not None:
+        raise RuntimeError(
+            "No se pudo inicializar una ventana gráfica con Tk. "
+            "Ejecuta: python -m simulation.arm_6r.simulator --diagnose-gui "
+            "para ver el detalle."
+        ) from _GUI_BACKEND_ERROR
+
+    print(f"Abriendo Simulador 6R con backend {matplotlib.get_backend()}...")
     Arm6RSimulator().show()
 
 
