@@ -432,14 +432,13 @@ else:
             f"{i + 1}: {s.elbow_branch} / {s.wrist_branch}"
             for i, s in enumerate(solutions)
         ]
-        chosen = st.radio(
+        st.radio(
             "Solución IK",
             options=list(range(len(labels))),
             format_func=lambda i: labels[i],
             horizontal=True,
             key="selected_solution",
         )
-        st.session_state.selected_solution = chosen
 
     solution = selected_solution() if signature_ok else None
     ghost_q = solution.q if solution is not None else None
