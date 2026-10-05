@@ -112,6 +112,14 @@ La configuración cero es una referencia matemática. No debe confundirse con un
 
 Selecciona **IK**.
 
+Si vienes del modo FK y quieres comprobar que la IK puede recuperar la pose que acabas de generar, primero pulsa:
+
+```text
+Usar pose actual como target
+```
+
+Ese botón copia la pose TCP calculada por la FK actual a los controles de posición y orientación del target. Después puedes pulsar **Resolver IK** y comparar la solución con la configuración de partida.
+
 En la barra lateral puedes modificar:
 
 - `X`, `Y`, `Z`: posición deseada del TCP;
@@ -146,7 +154,7 @@ La FK se ejecuta sobre la solución para comprobar que la pose obtenida coincide
 
 Después de elegir una solución presiona **Alcanzar**.
 
-El robot se anima desde la configuración actual hasta la solución elegida.
+El robot se anima desde la configuración actual hasta la solución elegida. La transición se muestra de forma deliberadamente más lenta y con una barra de progreso para que el movimiento sea visible incluso cuando la app corre dentro de Codespaces.
 
 La animación es sólo una interpolación articular para visualizar la transición. **No es planeación de trayectoria, control de motores ni garantía de una trayectoria libre de colisiones.**
 
