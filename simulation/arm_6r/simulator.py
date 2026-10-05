@@ -11,20 +11,39 @@ from __future__ import annotations
 
 import argparse
 import math
+import os
 import sys
 
 import matplotlib
 import numpy as np
 
 
-# El smoke test usa un backend sin ventana a propósito. Para la interfaz real
-# comprobamos Tk antes de importar pyplot, de modo que un backend no interactivo
-# no pueda hacer que el programa termine "sin abrir nada".
+# Selección de backend:
+# - smoke test: Agg (sin interfaz)
+# - Codespaces/headless Linux: WebAgg (interfaz en navegador)
+# - entorno local con escritorio: TkAgg
 _SMOKE_REQUESTED = "--smoke-test" in sys.argv
+_HEADLESS = (
+    os.environ.get("CODESPACES", "").lower() == "true"
+    or (
+        sys.platform != "win32"
+        and not os.environ.get("DISPLAY")
+        and not os.environ.get("WAYLAND_DISPLAY")
+    )
+)
+_GUI_MODE = "desktop"
 _GUI_BACKEND_ERROR: Exception | None = None
+WEBAGG_PORT = int(os.environ.get("SIMULATOR_PORT", "8988"))
 
 if _SMOKE_REQUESTED:
     matplotlib.use("Agg", force=True)
+    _GUI_MODE = "smoke"
+elif _HEADLESS:
+    matplotlib.use("WebAgg", force=True)
+    matplotlib.rcParams["webagg.address"] = "0.0.0.0"
+    matplotlib.rcParams["webagg.port"] = WEBAGG_PORT
+    matplotlib.rcParams["webagg.open_in_browser"] = False
+    _GUI_MODE = "web"
 else:
     try:
         import tkinter as tk
@@ -34,7 +53,8 @@ else:
         _probe.update_idletasks()
         _probe.destroy()
         matplotlib.use("TkAgg", force=True)
-    except Exception as exc:  # se reporta de forma clara en main()
+        _GUI_MODE = "desktop"
+    except Exception as exc:
         _GUI_BACKEND_ERROR = exc
 
 import matplotlib.pyplot as plt
@@ -471,7 +491,7 @@ def main() -> None:
     parser.add_argument(
         "--diagnose-gui",
         action="store_true",
-        help="Muestra el backend gráfico y el estado de Tk sin abrir el simulador.",
+        help="Muestra el backend gráfico y el modo de interfaz sin abrir el simulador.",
     )
     args = parser.parse_args()
 
@@ -479,7 +499,13 @@ def main() -> None:
         print(f"Python: {sys.executable}")
         print(f"Matplotlib: {matplotlib.__version__}")
         print(f"Backend: {matplotlib.get_backend()}")
-        if _GUI_BACKEND_ERROR is None:
+        print(f"Modo GUI: {_GUI_MODE}")
+        print(f"CODESPACES: {os.environ.get('CODESPACES', 'false')}")
+        print(f"DISPLAY: {os.environ.get('DISPLAY', '<no definido>')}")
+        if _GUI_MODE == "web":
+            print(f"WebAgg: OK -> puerto {WEBAGG_PORT}")
+            print("En Codespaces abre la pestaña PORTS y abre ese puerto en el navegador.")
+        elif _GUI_BACKEND_ERROR is None:
             print("Tk GUI: OK")
         else:
             print(f"Tk GUI: ERROR -> {_GUI_BACKEND_ERROR}")
@@ -496,7 +522,13 @@ def main() -> None:
             "para ver el detalle."
         ) from _GUI_BACKEND_ERROR
 
-    print(f"Abriendo Simulador 6R con backend {matplotlib.get_backend()}...")
+    if _GUI_MODE == "web":
+        print(f"Simulador 6R listo con WebAgg en el puerto {WEBAGG_PORT}.")
+        print("En GitHub Codespaces abre la pestaña PORTS, localiza ese puerto y elige Open in Browser.")
+        print("Deja esta terminal corriendo mientras uses el simulador.")
+    else:
+        print(f"Abriendo Simulador 6R con backend {matplotlib.get_backend()}...")
+
     Arm6RSimulator().show()
 
 
