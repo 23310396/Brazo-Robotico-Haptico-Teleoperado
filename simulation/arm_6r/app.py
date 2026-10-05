@@ -95,6 +95,27 @@ def set_zero() -> None:
     sync_joint_widgets()
 
 
+def set_target_from_current_pose() -> None:
+    """Copia la pose FK actual a los controles del target IK."""
+    fk = forward_kinematics(st.session_state.q_current, GEOMETRY)
+    position = fk["p_tcp"].copy()
+    rpy_deg = np.rad2deg(rotation_to_rpy_zyx(fk["R_tcp"]))
+
+    st.session_state.target_position = position
+    st.session_state.target_rpy_deg = rpy_deg
+    st.session_state.target_x = float(position[0])
+    st.session_state.target_y = float(position[1])
+    st.session_state.target_z = float(position[2])
+    st.session_state.target_roll = float(rpy_deg[0])
+    st.session_state.target_pitch = float(rpy_deg[1])
+    st.session_state.target_yaw = float(rpy_deg[2])
+
+    st.session_state.ik_solutions = []
+    st.session_state.ik_status = "Sin resolver"
+    st.session_state.solved_signature = None
+    st.session_state.selected_solution = 0
+
+
 def add_frame(fig: go.Figure, transform: np.ndarray, scale: float = 0.16) -> None:
     origin = transform[:3, 3]
     rotation = transform[:3, :3]
@@ -265,8 +286,10 @@ def animate_to_solution(placeholder) -> None:
 
     q_start = st.session_state.q_current.copy()
     delta = shortest_joint_delta(q_start, solution.q)
-    frames = 35
+    frames = 45
+    frame_delay_s = 0.08
     trail_enabled = st.session_state.get("show_trail", False)
+    progress = st.progress(0, text="Animando movimiento articular...")
 
     for frame in range(frames):
         u = frame / (frames - 1)
@@ -291,8 +314,13 @@ def animate_to_solution(placeholder) -> None:
             ),
             use_container_width=True,
         )
-        time.sleep(0.025)
+        progress.progress(
+            (frame + 1) / frames,
+            text=f"Animando movimiento articular... {frame + 1}/{frames}",
+        )
+        time.sleep(frame_delay_s)
 
+    progress.empty()
     st.session_state.q_current = solution.q.copy()
     sync_joint_widgets()
 
@@ -352,6 +380,12 @@ if mode == "FK":
 
 else:
     with st.sidebar:
+        st.button(
+            "Usar pose actual como target",
+            use_container_width=True,
+            on_click=set_target_from_current_pose,
+        )
+
         st.subheader("Target — posición")
         target_position = np.array(
             [
@@ -359,7 +393,6 @@ else:
                     "X",
                     -WORKSPACE_LIMIT,
                     WORKSPACE_LIMIT,
-                    value=float(st.session_state.target_position[0]),
                     step=0.01,
                     key="target_x",
                 ),
@@ -367,7 +400,6 @@ else:
                     "Y",
                     -WORKSPACE_LIMIT,
                     WORKSPACE_LIMIT,
-                    value=float(st.session_state.target_position[1]),
                     step=0.01,
                     key="target_y",
                 ),
@@ -375,7 +407,6 @@ else:
                     "Z",
                     -WORKSPACE_LIMIT,
                     WORKSPACE_LIMIT,
-                    value=float(st.session_state.target_position[2]),
                     step=0.01,
                     key="target_z",
                 ),
@@ -391,7 +422,6 @@ else:
                     "Roll [°]",
                     -180.0,
                     180.0,
-                    value=float(st.session_state.target_rpy_deg[0]),
                     step=1.0,
                     key="target_roll",
                 ),
@@ -399,7 +429,6 @@ else:
                     "Pitch [°]",
                     -180.0,
                     180.0,
-                    value=float(st.session_state.target_rpy_deg[1]),
                     step=1.0,
                     key="target_pitch",
                 ),
@@ -407,7 +436,6 @@ else:
                     "Yaw [°]",
                     -180.0,
                     180.0,
-                    value=float(st.session_state.target_rpy_deg[2]),
                     step=1.0,
                     key="target_yaw",
                 ),
