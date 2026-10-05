@@ -61,6 +61,54 @@ import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from matplotlib.widgets import Button, CheckButtons, RadioButtons, Slider
 
+
+def _patch_webagg_for_https_proxy() -> None:
+    """Hace que WebAgg use WSS cuando Codespaces publica el puerto por HTTPS."""
+    if _GUI_MODE != "web":
+        return
+
+    from matplotlib.backends import backend_webagg
+    from matplotlib._pylab_helpers import Gcf
+
+    core = backend_webagg.core
+
+    def _ws_uri(handler) -> str:
+        forwarded_proto = handler.request.headers.get("X-Forwarded-Proto", "")
+        forwarded_proto = forwarded_proto.split(",", 1)[0].strip().lower()
+        secure = (
+            forwarded_proto == "https"
+            or os.environ.get("CODESPACES", "").lower() == "true"
+        )
+        scheme = "wss" if secure else "ws"
+        return f"{scheme}://{handler.request.host}{handler.url_prefix}/"
+
+    def _single_figure_get(handler, fignum):
+        fignum = int(fignum)
+        manager = Gcf.get_fig_manager(fignum)
+        handler.render(
+            "single_figure.html",
+            prefix=handler.url_prefix,
+            ws_uri=_ws_uri(handler),
+            fig_id=fignum,
+            toolitems=core.NavigationToolbar2WebAgg.toolitems,
+            canvas=manager.canvas,
+        )
+
+    def _all_figures_get(handler):
+        handler.render(
+            "all_figures.html",
+            prefix=handler.url_prefix,
+            ws_uri=_ws_uri(handler),
+            figures=sorted(Gcf.figs.items()),
+            toolitems=core.NavigationToolbar2WebAgg.toolitems,
+        )
+
+    backend_webagg.WebAggApplication.SingleFigurePage.get = _single_figure_get
+    backend_webagg.WebAggApplication.AllFiguresPage.get = _all_figures_get
+
+
+_patch_webagg_for_https_proxy()
+
 from robot.kinematics.forward_kinematics import (
     forward_kinematics,
     rotation_to_rpy_zyx,

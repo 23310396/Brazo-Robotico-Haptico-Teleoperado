@@ -78,6 +78,8 @@ Modo GUI: web
 WebAgg: OK -> puerto 8988
 ```
 
+Codespaces publica el puerto por HTTPS. El simulador corrige WebAgg para usar un WebSocket seguro (`wss://`) detrás de ese proxy. Si la página abre pero el lienzo queda completamente blanco, primero verifica que tengas la versión más reciente del repo con `git pull` y reinicia el simulador.
+
 En una PC local normalmente esperamos:
 
 ```text
