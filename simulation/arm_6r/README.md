@@ -22,7 +22,30 @@ También desde la raíz del repositorio:
 python -m simulation.arm_6r.simulator
 ```
 
-Se abrirá una ventana de Matplotlib con el robot 3D y los controles.
+Se abrirá una ventana de Matplotlib con el robot 3D y los controles. En Windows el simulador comprueba primero que Tk pueda crear una ventana y fuerza el backend interactivo `TkAgg`.
+
+Al arrancar normalmente la terminal debe mostrar algo parecido a:
+
+```text
+Abriendo Simulador 6R con backend TkAgg...
+```
+
+### Si no se abre ninguna ventana
+
+Ejecuta:
+
+```bash
+python -m simulation.arm_6r.simulator --diagnose-gui
+```
+
+El diagnóstico muestra qué Python estás usando, la versión de Matplotlib, el backend gráfico y si Tk está disponible. Para una instalación normal de Python en Windows esperamos ver:
+
+```text
+Backend: TkAgg
+Tk GUI: OK
+```
+
+Si aparece `Tk GUI: ERROR`, esa instalación de Python no puede crear la ventana gráfica. No es un error de la FK/IK; es el entorno gráfico de Python. Conserva el texto completo del diagnóstico para saber exactamente qué falta.
 
 Si sólo quieres comprobar que el simulador carga, que la FK/IK funciona y que Matplotlib puede renderizar sin abrir la interfaz:
 
