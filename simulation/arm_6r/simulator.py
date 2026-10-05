@@ -491,7 +491,7 @@ def main() -> None:
     parser.add_argument(
         "--diagnose-gui",
         action="store_true",
-        help="Muestra el backend gráfico y el estado de Tk sin abrir el simulador.",
+        help="Muestra el backend gráfico y el modo de interfaz sin abrir el simulador.",
     )
     args = parser.parse_args()
 
