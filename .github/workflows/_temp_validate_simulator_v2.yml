@@ -1,0 +1,32 @@
+name: TEMP validate simulator v2
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: python -m pip install -r simulation/arm_6r/requirements.txt
+      - name: Compile Python
+        run: python -m compileall -q robot/kinematics simulation/arm_6r
+      - name: Kinematics tests
+        run: python -m pytest robot/kinematics/tests -q
+      - name: Smoke test
+        run: python -m simulation.arm_6r.simulator --smoke-test
+      - name: Streamlit script test
+        run: |
+          python - <<'PY'
+          from streamlit.testing.v1 import AppTest
+          app = AppTest.from_file("simulation/arm_6r/app.py")
+          app.run(timeout=30)
+          if app.exception:
+              raise RuntimeError(app.exception)
+          print("STREAMLIT APP TEST OK")
+          PY
