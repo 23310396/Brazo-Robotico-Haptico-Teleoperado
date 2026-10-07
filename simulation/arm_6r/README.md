@@ -1,6 +1,6 @@
 # Simulador 6R
 
-Este simulador es un banco de pruebas para la cinemática del brazo 6R del proyecto. Permite mover el manipulador por articulaciones con FK y también definir una pose objetivo para probar la IK.
+Este simulador es el banco de pruebas cinemático del manipulador 6R. Permite mover el brazo por articulaciones con FK, definir una pose objetivo para probar la IK y verificar las soluciones volviendo a ejecutar la FK.
 
 > **Importante:** la geometría actual es sintética: `L1 = 1.0`, `L2 = 1.0` y `LT = 0.25`. Son valores de demo y no representan dimensiones físicas del brazo final.
 
@@ -24,9 +24,9 @@ python -m simulation.arm_6r.simulator
 
 El simulador se abre en el navegador usando Streamlit + Plotly.
 
-### Si estás en GitHub Codespaces
+### GitHub Codespaces
 
-La terminal mostrará el puerto usado, normalmente:
+La terminal muestra el puerto usado, normalmente:
 
 ```text
 8501
@@ -34,18 +34,18 @@ La terminal mostrará el puerto usado, normalmente:
 
 Después:
 
-1. abre la pestaña **PORTS** en Codespaces;
+1. abre la pestaña **PORTS**;
 2. busca el puerto `8501`;
 3. usa **Open in Browser**;
 4. deja la terminal corriendo mientras uses el simulador.
 
-Si quieres usar otro puerto:
+Si quieres cambiar el puerto:
 
 ```bash
 SIMULATOR_PORT=9000 python -m simulation.arm_6r.simulator
 ```
 
-### Si estás en una PC local
+### PC local
 
 Ejecuta el mismo comando:
 
@@ -53,17 +53,15 @@ Ejecuta el mismo comando:
 python -m simulation.arm_6r.simulator
 ```
 
-Streamlit abrirá el navegador con el simulador.
+Streamlit abrirá el navegador con la aplicación.
 
-## Diagnóstico
+## Diagnóstico y pruebas
 
-Para comprobar qué entorno está usando:
+Para revisar el entorno:
 
 ```bash
 python -m simulation.arm_6r.simulator --diagnose-gui
 ```
-
-Debe mostrar Python, versión de Streamlit, versión de Plotly y el puerto del simulador.
 
 Para validar la FK/IK y las dependencias sin abrir la interfaz:
 
@@ -85,47 +83,66 @@ python -m pytest robot/kinematics/tests
 
 ## Modo FK
 
-Selecciona **FK** en la barra lateral.
+Selecciona **FK**.
 
-Aparecen seis sliders:
+Cada articulación `J1` a `J6` tiene dos controles sincronizados:
 
-- `J1`
-- `J2`
-- `J3`
-- `J4`
-- `J5`
-- `J6`
+- un slider para explorar rápidamente;
+- un campo numérico para escribir un ángulo exacto.
 
-Al moverlos, el robot se actualiza en 3D.
+Los ángulos se expresan en grados y el campo numérico acepta centésimas de grado.
 
-También se muestra:
+Modificar cualquiera de los dos controles actualiza el otro y vuelve a calcular el robot.
+
+También se muestran:
 
 - posición actual del TCP;
 - orientación actual en Roll, Pitch y Yaw;
 - ángulos actuales de las seis articulaciones.
 
-El botón **Configuración cero** regresa las seis articulaciones a `0°`.
+El botón **Configuración cero** regresa:
 
-La configuración cero es una referencia matemática. No debe confundirse con una posición HOME o segura del robot real.
+```text
+q = [0, 0, 0, 0, 0, 0]
+```
+
+Esta configuración es una referencia matemática y no debe confundirse con una posición HOME o segura del robot físico.
 
 ## Modo IK
 
 Selecciona **IK**.
 
-Si vienes del modo FK y quieres comprobar que la IK puede recuperar la pose que acabas de generar, primero pulsa:
+### Usar la pose FK como target
 
-```text
-Usar pose actual como target
-```
+Si quieres hacer una prueba FK → IK → FK:
 
-Ese botón copia la pose TCP calculada por la FK actual a los controles de posición y orientación del target. Después puedes pulsar **Resolver IK** y comparar la solución con la configuración de partida.
+1. genera una postura en FK;
+2. cambia a IK;
+3. pulsa **Usar pose actual como target**;
+4. pulsa **Configuración cero** si quieres mover el robot lejos del target;
+5. pulsa **Resolver IK**;
+6. selecciona una solución;
+7. pulsa **Alcanzar**.
 
-En la barra lateral puedes modificar:
+La pose se copia internamente sin redondear los valores usados por la FK.
 
-- `X`, `Y`, `Z`: posición deseada del TCP;
-- `Roll`, `Pitch`, `Yaw`: orientación deseada del TCP.
+### Controles exactos del target
 
-La convención de orientación de la interfaz es:
+Posición:
+
+- `X`
+- `Y`
+- `Z`
+
+Orientación:
+
+- `Roll`
+- `Pitch`
+- `Yaw`
+
+Cada variable tiene slider y entrada numérica sincronizados.
+
+La convención de orientación usada por la interfaz es:
 
 ```text
 R = Rz(Yaw) · Ry(Pitch) · Rx(Roll)
@@ -133,11 +150,61 @@ R = Rz(Yaw) · Ry(Pitch) · Rx(Roll)
 
 Mover el target no mueve automáticamente el robot.
 
-### Resolver IK
+## Presets de prueba
 
-Presiona **Resolver IK**.
+La v2 incluye cuatro casos reproducibles:
 
-Si hay soluciones válidas aparecen las distintas ramas, por ejemplo:
+### A — alcanzable frontal
+
+```text
+X = 1.50
+Y = 0.50
+Z = 0.70
+Roll = Pitch = Yaw = 0°
+```
+
+Debe resolverse normalmente.
+
+### B — alcanzable lateral
+
+```text
+X = 0.90
+Y = -1.10
+Z = 0.80
+Roll = Pitch = Yaw = 0°
+```
+
+Debe resolverse y exigir un giro lateral claro de J1.
+
+### C — plegado extremo
+
+```text
+X = 0.35
+Y = 0.05
+Z = 0.30
+Roll = Pitch = Yaw = 0°
+```
+
+Es geométricamente alcanzable, pero fuerza una configuración muy plegada. Sirve para recordar que esta versión todavía no modela autocolisión ni volumen físico de los eslabones.
+
+### D — inalcanzable
+
+```text
+X = 2.60
+Y = 0.00
+Z = 0.25
+Roll = Pitch = Yaw = 0°
+```
+
+Debe reportarse como `UNREACHABLE`.
+
+El selector sólo carga los valores. Todavía necesitas pulsar **Resolver IK**.
+
+## Resolver IK
+
+Al pulsar **Resolver IK**, el programa calcula las soluciones analíticas disponibles.
+
+Pueden aparecer ramas como:
 
 ```text
 elbow+ / wrist+
@@ -148,15 +215,43 @@ elbow- / wrist-flip
 
 La solución seleccionada se dibuja como un robot fantasma.
 
-La FK se ejecuta sobre la solución para comprobar que la pose obtenida coincide con la pose pedida.
+La FK se ejecuta nuevamente sobre esa solución para comprobar que la pose calculada coincide con el target.
 
-### Alcanzar
+La interfaz separa tres estados:
 
-Después de elegir una solución presiona **Alcanzar**.
+```text
+TARGET
+IK
+SINGULARIDAD
+```
 
-El robot se anima desde la configuración actual hasta la solución elegida. La transición se muestra de forma deliberadamente más lenta y con una barra de progreso para que el movimiento sea visible incluso cuando la app corre dentro de Codespaces.
+Por ejemplo:
 
-La animación es sólo una interpolación articular para visualizar la transición. **No es planeación de trayectoria, control de motores ni garantía de una trayectoria libre de colisiones.**
+```text
+TARGET: ALCANZABLE
+IK: OK
+SINGULARIDAD: NO
+```
+
+o:
+
+```text
+TARGET: INALCANZABLE
+IK: UNREACHABLE
+SINGULARIDAD: —
+```
+
+## Alcanzar
+
+Después de seleccionar una solución pulsa **Alcanzar**.
+
+La v2 genera 60 configuraciones intermedias y envía la animación completa al navegador. Plotly reproduce los frames localmente, por lo que Streamlit ya no necesita volver a dibujar toda la página en cada frame.
+
+La duración visual nominal es de aproximadamente 2.5 segundos.
+
+La interpolación sigue siendo articular y usa una transición suavizada entre la configuración inicial y final.
+
+> **La animación no es planificación de trayectoria ni control físico.** Puede atravesar obstáculos, regiones problemáticas o futuras geometrías del robot.
 
 ## Opciones de visualización
 
@@ -166,11 +261,11 @@ En la barra lateral están disponibles:
 - **Mostrar target**
 - **Trayectoria TCP**
 
-La vista 3D de Plotly se puede rotar, acercar y alejar directamente con el mouse.
+La vista 3D se puede rotar, acercar y alejar con el mouse.
 
 ## Dónde está cada cosa
 
-La matemática está separada de la interfaz:
+La matemática y la interfaz se mantienen separadas:
 
 ```text
 robot/kinematics/
@@ -187,31 +282,33 @@ simulation/arm_6r/
 └── README.md
 ```
 
-`model_6r.py` contiene la geometría sintética y los límites usados por la demo.
+`model_6r.py` contiene la geometría sintética y los límites de demo.
 
 `forward_kinematics.py` implementa la tabla DH y la FK.
 
-`inverse_kinematics.py` implementa la IK analítica y genera las ramas de solución.
+`inverse_kinematics.py` implementa la IK analítica.
 
-`app.py` contiene la interfaz web.
+`app.py` contiene la interfaz web y la animación visual.
 
-`simulator.py` arranca la aplicación y conserva los comandos de diagnóstico y smoke test.
+`simulator.py` arranca la aplicación y contiene diagnóstico/smoke test.
 
-`test_kinematics.py` comprueba casos conocidos, consistencia FK→IK→FK, targets imposibles y singularidad de muñeca.
+`test_kinematics.py` comprueba casos conocidos, consistencia FK → IK → FK, targets imposibles y singularidad de muñeca.
 
 ## Qué todavía no representa este simulador
 
-Esta versión no modela:
+La v2 todavía no modela:
 
 - dinámica;
 - torque;
 - motores o transmisiones;
-- velocidad real;
-- aceleración real;
-- colisiones con el torso;
+- velocidad o aceleración física real;
+- autocolisiones;
+- colisiones con torso;
 - obstáculos;
 - planeación de trayectoria;
+- Jacobiano completo;
 - límites mecánicos reales;
+- dimensiones finales;
 - seguridad física del robot.
 
-Su función actual es validar y entender la geometría, FK e IK antes de cerrar las dimensiones físicas del manipulador.
+Su función sigue siendo validar y explorar la cinemática antes de cerrar la geometría física del manipulador.
