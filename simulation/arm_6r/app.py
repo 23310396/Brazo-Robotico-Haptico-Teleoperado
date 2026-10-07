@@ -31,6 +31,16 @@ WORKSPACE_LIMIT = GEOMETRY.l1 + GEOMETRY.l2 + GEOMETRY.lt + 0.35
 ANIMATION_FRAMES = 60
 ANIMATION_DURATION_MS = 2500
 
+# Paleta fija para que la vista normal y la animación se vean iguales.
+PLOT_BG = "#0E1117"
+PLOT_TEXT = "#FAFAFA"
+PLOT_GRID = "#2B3139"
+ROBOT_COLOR = "#6EC5FF"
+TCP_COLOR = "#1F9CF0"
+TARGET_COLOR = "#FF4B4B"
+GHOST_COLOR = "#8A6F75"
+TRAIL_COLOR = "#7EC8E3"
+
 TEST_PRESETS = {
     "A — alcanzable frontal": {
         "position": np.array([1.50, 0.50, 0.70], dtype=float),
@@ -263,8 +273,8 @@ def build_figure(
             z=points[:, 2],
             mode="lines+markers",
             name="Robot actual",
-            marker=dict(size=6),
-            line=dict(width=7),
+            marker=dict(size=6, color=ROBOT_COLOR),
+            line=dict(width=7, color=ROBOT_COLOR),
         )
     )
     fig.add_trace(
@@ -274,7 +284,7 @@ def build_figure(
             z=[points[-1, 2]],
             mode="markers",
             name="TCP",
-            marker=dict(size=8, symbol="diamond"),
+            marker=dict(size=8, symbol="diamond", color=TCP_COLOR),
         )
     )
 
@@ -287,8 +297,8 @@ def build_figure(
                 z=ghost[:, 2],
                 mode="lines+markers",
                 name="Solución IK",
-                marker=dict(size=5),
-                line=dict(width=5, dash="dash"),
+                marker=dict(size=5, color=GHOST_COLOR),
+                line=dict(width=5, dash="dash", color=GHOST_COLOR),
                 opacity=0.4,
             )
         )
@@ -301,7 +311,7 @@ def build_figure(
                 z=[target_position[2]],
                 mode="markers",
                 name="Target",
-                marker=dict(size=9, symbol="x"),
+                marker=dict(size=9, symbol="x", color=TARGET_COLOR),
             )
         )
         if target_rotation is not None:
@@ -324,21 +334,37 @@ def build_figure(
                 z=arr[:, 2],
                 mode="lines",
                 name="Trayectoria TCP",
-                line=dict(width=3),
+                line=dict(width=3, color=TRAIL_COLOR),
             )
         )
 
     lim = WORKSPACE_LIMIT
+    axis_style = dict(
+        backgroundcolor=PLOT_BG,
+        gridcolor=PLOT_GRID,
+        zerolinecolor=PLOT_GRID,
+        color=PLOT_TEXT,
+    )
+
     fig.update_layout(
+        template="plotly_dark",
         height=690,
         margin=dict(l=0, r=0, b=0, t=35),
+        paper_bgcolor=PLOT_BG,
+        plot_bgcolor=PLOT_BG,
+        font=dict(color=PLOT_TEXT),
         scene=dict(
-            xaxis=dict(title="X", range=[-lim, lim]),
-            yaxis=dict(title="Y", range=[-lim, lim]),
-            zaxis=dict(title="Z", range=[-lim, lim]),
+            bgcolor=PLOT_BG,
+            xaxis=dict(title="X", range=[-lim, lim], **axis_style),
+            yaxis=dict(title="Y", range=[-lim, lim], **axis_style),
+            zaxis=dict(title="Z", range=[-lim, lim], **axis_style),
             aspectmode="cube",
         ),
-        legend=dict(orientation="h"),
+        legend=dict(
+            orientation="h",
+            font=dict(color=PLOT_TEXT),
+            bgcolor="rgba(0,0,0,0)",
+        ),
         uirevision="keep-camera",
     )
     return fig
@@ -382,15 +408,15 @@ def build_animation_html(
                         y=points[:, 1],
                         z=points[:, 2],
                         mode="lines+markers",
-                        marker=dict(size=6),
-                        line=dict(width=7),
+                        marker=dict(size=6, color=ROBOT_COLOR),
+                        line=dict(width=7, color=ROBOT_COLOR),
                     ),
                     go.Scatter3d(
                         x=[points[-1, 0]],
                         y=[points[-1, 1]],
                         z=[points[-1, 2]],
                         mode="markers",
-                        marker=dict(size=8, symbol="diamond"),
+                        marker=dict(size=8, symbol="diamond", color=TCP_COLOR),
                     ),
                 ],
             )
@@ -411,6 +437,10 @@ def build_animation_html(
             "mode": "immediate",
         },
         config={"responsive": True, "displaylogo": False},
+    )
+    html = (
+        f"<style>html,body{{margin:0;background:{PLOT_BG};color:{PLOT_TEXT};}}</style>"
+        + html
     )
     return html, q_path
 
