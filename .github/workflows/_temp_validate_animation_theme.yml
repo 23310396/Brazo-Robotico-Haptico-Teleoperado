@@ -1,0 +1,26 @@
+name: TEMP validate animation theme
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install -r simulation/arm_6r/requirements.txt
+      - run: python -m compileall -q simulation/arm_6r
+      - run: python -m simulation.arm_6r.simulator --smoke-test
+      - run: |
+          python - <<'PY'
+          from streamlit.testing.v1 import AppTest
+          app = AppTest.from_file("simulation/arm_6r/app.py")
+          app.run(timeout=30)
+          if app.exception:
+              raise RuntimeError(app.exception)
+          print("STREAMLIT APP TEST OK")
+          PY
